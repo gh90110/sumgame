@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>بازی جمع</title>
+<style>
+  body {
+      font-family: 'Arial', sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      background-color: #f0f8ff; /* Light background */
+  }
+  #container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow: hidden; /* Prevent overflow */
+  }
+  #grid {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr); /* 8 columns for mobile */
+      gap: 5px;
+      margin: 20px auto;
+      width: 100%; /* Full width for the grid */
+  }
+  .cell {
+      width: 100%; /* Full width for each cell */
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      border: 1px solid #000;
+      cursor: pointer;
+      background-color: lightgray; /* Default color */
+      border-radius: 8px; /* Rounded corners */
+  }
+  .selected {
+      background-color: yellow; /* Color for selected cells */
+  }
+  .correct {
+      background-color: lightgreen; /* Color for correct answer */
+      color: transparent; /* Hide number */
+  }
+  h1 {
+      font-size: 28px;
+      color: #333; /* Darker color for headings */
+  }
+  h2 {
+      font-size: 24px;
+      color: #555; /* Slightly lighter color */
+  }
+  #target-number {
+      font-size: 36px; /* Larger target number */
+      margin: 10px 0; /* Adjusted margin */
+      color: #007BFF; /* Primary color */
+  }
+  #score {
+      font-size: 20px; /* Score size */
+      color: #FF4500; /* Score color */
+  }
+  select {
+      font-size: 18px;
+      margin: 10px 0;
+      padding: 5px;
+      border-radius: 5px; /* Rounded corners */
+      border: 1px solid #ccc; /* Border style */
+  }
+  button {
+      font-size: 20px;
+      padding: 10px 15px;
+      margin-top: 20px;
+      background-color: #28a745; /* Button color */
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+  }
+  @media (min-width: 600px) {
+      #grid {
+          grid-template-columns: repeat(8, 50px); /* For larger screens */
+      }
+  }
+</style>
+</head>
+<body>
+<div id="container">
+  <h1>بازی جمع</h1>
+  <label for="time-select">تنظیم زمان: </label>
+  <select id="time-select">
+      <option value="60">1 دقیقه</option>
+      <option value="120">2 دقیقه</option>
+      <option value="180">3 دقیقه</option>
+      <option value="240">4 دقیقه</option>
+      <option value="300">5 دقیقه</option>
+  </select>
+  <h2 id="score">امتیاز: 0</h2>
+  <h2 id="target-number">عدد هدف: </h2>
+  <div id="grid"></div>
+  <button id="reset-button">شروع دوباره</button>
+  <h2 id="timer">زمان باقی‌مانده: 120 ثانیه</h2>
+</div>
+
+<script>
+  const grid = document.getElementById('grid');
+  const targetNumberDisplay = document.getElementById('target-number');
+  const scoreDisplay = document.getElementById('score');
+  const timerDisplay = document.getElementById('timer');
+  const resetButton = document.getElementById('reset-button');
+  const timeSelect = document.getElementById('time-select');
+  let targetNumber;
+  let selectedCells = [];
+  let score = 0;
+  let timeRemaining = 120; // Default 2 minutes
+  let timerInterval;
+
+  function generateGrid() {
+      grid.innerHTML = '';
+      selectedCells = [];
+      score = 0; // Reset score to zero
+      scoreDisplay.textContent = `امتیاز: ${score}`; // Update score display
+      const numbers = Array.from({ length: 64 }, () => Math.floor(Math.random() * 10));
+      numbers.forEach((number) => {
+          const cell = document.createElement('div');
+          cell.classList.add('cell');
+          cell.textContent = number;
+          cell.dataset.value = number;
+          cell.addEventListener('click', () => selectCell(cell));
+          grid.appendChild(cell);
+      });
+      generateTargetNumber();
+      startTimer();
+  }
+
+  function generateTargetNumber() {
+      targetNumber = Math.floor(Math.random() * 20) + 1;
+      targetNumberDisplay.textContent = `عدد هدف: ${targetNumber}`;
+  }
+
+  function selectCell(cell) {
+      if (selectedCells.includes(cell)) {
+          cell.classList.remove('selected');
+          selectedCells = selectedCells.filter(selected => selected !== cell);
+      } else {
+          selectedCells.push(cell);
+          cell.classList.add('selected');
+      }
+      checkSum();
+  }
+
+  function checkSum() {
+      const sum = selectedCells.reduce((acc, cell) => acc + parseInt(cell.dataset.value), 0);
+      if (sum === targetNumber) {
+          selectedCells.forEach(cell => {
+              cell.classList.add('correct'); // Change color for correct answer
+              cell.textContent = ''; // Hide the number
+          });
+          score += 10; // Add points for correct sum
+          scoreDisplay.textContent = `امتیاز: ${score}`;
+          selectedCells = [];
+          generateTargetNumber(); // Generate a new target number
+      } else if (sum > targetNumber) {
+          selectedCells.forEach(cell => {
+              cell.classList.remove('selected'); // Remove selection
+          });
+          selectedCells = []; // Clear selected cells
+      }
+  }
+
+  function startTimer() {
+      timeRemaining = parseInt(timeSelect.value); // Set time based on user selection
+      timerDisplay.textContent = `زمان باقی‌مانده: ${timeRemaining} ثانیه`;
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+          timeRemaining--;
+          timerDisplay.textContent = `زمان باقی‌مانده: ${timeRemaining} ثانیه`;
+          if (timeRemaining <= 0) {
+              clearInterval(timerInterval);
+              alert('زمان تمام شد!'); // Alert when time is up
+              generateGrid(); // Restart game
+          }
+      }, 1000);
+  }
+
+  resetButton.addEventListener('click', generateGrid);
+  timeSelect.addEventListener('change', generateGrid);
+  generateGrid(); // Initialize the game on load
+</script>
+</body>
+</html>
