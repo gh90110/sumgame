@@ -87,20 +87,20 @@
 </head>
 <body>
 <div id="container">
-  <h1>header</h1>
-  <label for="time-select">����� ����: </label>
+  <h1>بازی جمع</h1>
+  <label for="time-select">تنظیم زمان: </label>
   <select id="time-select">
-      <option value="60">1 �����</option>
-      <option value="120">2 �����</option>
-      <option value="180">3 �����</option>
-      <option value="240">4 �����</option>
-      <option value="300">5 �����</option>
+      <option value="60">1 دقیقه</option>
+      <option value="120">2 دقیقه</option>
+      <option value="180">3 دقیقه</option>
+      <option value="240">4 دقیقه</option>
+      <option value="300">5 دقیقه</option>
   </select>
-  <h2 id="score">������: 0</h2>
-  <h2 id="target-number">��� ���: </h2>
+  <h2 id="score">امتیاز: 0</h2>
+  <h2 id="target-number">عدد هدف: </h2>
   <div id="grid"></div>
-  <button id="reset-button">���� ������</button>
-  <h2 id="timer">���� ���������: 120 �����</h2>
+  <button id="reset-button">شروع دوباره</button>
+  <h2 id="timer">زمان باقی‌مانده: 120 ثانیه</h2>
 </div>
 
 <script>
@@ -120,7 +120,7 @@
       grid.innerHTML = '';
       selectedCells = [];
       score = 0; // Reset score to zero
-      scoreDisplay.textContent = `������: ${score}`; // Update score display
+      scoreDisplay.textContent = `امتیاز: ${score}`; // Update score display
       const numbers = Array.from({ length: 64 }, () => Math.floor(Math.random() * 10));
       numbers.forEach((number) => {
           const cell = document.createElement('div');
@@ -136,7 +136,7 @@
 
   function generateTargetNumber() {
       targetNumber = Math.floor(Math.random() * 20) + 1;
-      targetNumberDisplay.textContent = `��� ���: ${targetNumber}`;
+      targetNumberDisplay.textContent = `عدد هدف: ${targetNumber}`;
   }
 
   function selectCell(cell) {
@@ -158,7 +158,7 @@
               cell.textContent = ''; // Hide the number
           });
           score += 10; // Add points for correct sum
-          scoreDisplay.textContent = `������: ${score}`;
+          scoreDisplay.textContent = `امتیاز: ${score}`;
           selectedCells = [];
           generateTargetNumber(); // Generate a new target number
       } else if (sum > targetNumber) {
@@ -171,14 +171,14 @@
 
   function startTimer() {
       timeRemaining = parseInt(timeSelect.value); // Set time based on user selection
-      timerDisplay.textContent = `���� ���������: ${timeRemaining} �����`;
+      timerDisplay.textContent = `زمان باقی‌مانده: ${timeRemaining} ثانیه`;
       clearInterval(timerInterval);
       timerInterval = setInterval(() => {
           timeRemaining--;
-          timerDisplay.textContent = `���� ���������: ${timeRemaining} �����`;
+          timerDisplay.textContent = `زمان باقی‌مانده: ${timeRemaining} ثانیه`;
           if (timeRemaining <= 0) {
               clearInterval(timerInterval);
-              alert('���� ���� ��!'); // Alert when time is up
+              alert('زمان تمام شد!'); // Alert when time is up
               generateGrid(); // Restart game
           }
       }, 1000);
