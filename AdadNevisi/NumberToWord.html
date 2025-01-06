@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>عدد به کلمه - نسخه 1</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+        h1 {
+            color: #333;
+        }
+        input {
+            padding: 10px;
+            border: 2px solid #007BFF;
+            border-radius: 5px;
+            width: 200px;
+            margin-top: 10px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007BFF;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 1.5em;
+            color: #333;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>تبدیل عدد به کلمه</h1>
+    <label for="numberInput">عدد را وارد کنید (1 تا 6 رقمی):</label>
+    <input type="number" id="numberInput" min="1" max="999999" />
+    <button onclick="convertToWords()">تبدیل</button>
+    <button onclick="generateRandomNumber()">عدد تصادفی</button>
+
+    <div id="result"></div>
+
+    <script>
+        function convertToWords() {
+            const number = document.getElementById('numberInput').value;
+            const words = numberToWords(number);
+            document.getElementById('result').innerText = words;
+        }
+
+        function generateRandomNumber() {
+            const randomNum = Math.floor(Math.random() * (999999 - 100) + 100); // عدد تصادفی بین 100 و 999999
+            document.getElementById('numberInput').value = randomNum;
+            convertToWords();
+        }
+
+        function numberToWords(num) {
+            const units = ['', 'یک', 'دو', 'سه', 'چهار', 'پنج', 'شش', 'هفت', 'هشت', 'نه'];
+            const teens = ['ده', 'یازده', 'دوازده', 'سیزده', 'چهارده', 'پانزده', 'شانزده', 'هفده', 'هجده', 'نوزده'];
+            const tens = ['', '', 'بیست', 'سی', 'چهل', 'پنجاه', 'شصت', 'هفتاد', 'هشتاد', 'نود'];
+            const hundreds = ['صد', 'دویست', 'سیصد', 'چهارصد', 'پانصد', 'ششصد', 'هفتصد', 'هشتصد', 'نهصد'];
+
+            if (num === '0') return 'صفر';
+
+            num = parseInt(num, 10);
+            let words = [];
+            
+            if (num >= 1000) {
+                const thousands = Math.floor(num / 1000);
+                words.push(numberToWords(thousands) + ' هزار');
+                num %= 1000;
+            }
+            if (num >= 100) {
+                words.push(hundreds[Math.floor(num / 100) - 1]);
+                num %= 100;
+            }
+            if (num >= 20) {
+                words.push(tens[Math.floor(num / 10)]);
+                num %= 10;
+            }
+            if (num >= 10) {
+                words.push(teens[num - 10]);
+            } else if (num > 0) {
+                words.push(units[num]);
+            }
+
+            return words.filter(Boolean).join(' و ').replace(/ و هزار$/, ' هزار');
+        }
+    </script>
+</body>
+</html>

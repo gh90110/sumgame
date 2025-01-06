@@ -123,7 +123,7 @@
       selectedCells = [];
       score = 0; // Reset score to zero
       scoreDisplay.textContent = `امتیاز: ${score}`; // Update score display
-      const numbers = Array.from({ length: 64 }, () => Math.floor(Math.random() * 10));
+      const numbers = Array.from({ length: 64 }, () => Math.floor(Math.random() * 9) + 1); // Generate numbers from 1 to 9
       numbers.forEach((number) => {
           const cell = document.createElement('div');
           cell.classList.add('cell');
@@ -181,14 +181,13 @@
           if (timeRemaining <= 0) {
               clearInterval(timerInterval);
               alert('زمان تمام شد!'); // Alert when time is up
-              // Do not restart timer here
           }
       }, 1000);
   }
 
   resetButton.addEventListener('click', generateGrid);
   timeSelect.addEventListener('change', generateGrid);
-  generateGrid(); // Initial call to generate the grid
+  generateGrid(); // Initial grid generation
 </script>
 </body>
 </html>
