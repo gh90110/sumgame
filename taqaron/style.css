@@ -1,0 +1,76 @@
+body {
+    font-family: sans-serif;
+    text-align: center;
+    background-color: #f0f0f0;
+    margin: 20px;
+}
+
+h1 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.game-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.game-controls label, .game-controls select, .game-controls button {
+    margin: 0 10px;
+}
+
+#time-select {
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+.game-controls button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.game-controls button:hover {
+    background-color: #0056b3;
+}
+
+.game-container {
+    display: flex;
+    justify-content: center;
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.error-message {
+    display: none;
+    position: absolute;
+    top: -40px;
+    padding: 10px;
+    background-color: rgba(255, 0, 0, 0.8);
+    color: white;
+    border-radius: 5px;
+}
+#game-board {
+    border-collapse: collapse;
+}
+
+#game-board td {
+    width: 30px;
+    height: 30px;
+    border: 1px solid #0d024b;
+    cursor: pointer;
+}
+
+
+#game-board td:nth-child(5) {
+  border-right: 2px solid red;
+}
+#game-board td.selected {
+    background-color: lightblue;
+}

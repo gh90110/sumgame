@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نمایش کسر روی محور</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            direction: rtl;
+            text-align: right;
+            margin: 20px;
+        }
+        .input-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        input {
+            margin: 5px;
+            padding: 10px;
+            width: 60px;
+            text-align: center; /* مرکز کردن متن داخل ورودی‌ها */
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #canvasContainer {
+            width: 600px;
+            height: 200px;
+            margin: 20px auto;
+            border: 1px solid #ccc;
+        }
+        #canvas {
+            width: 100%;
+            height: 100%;
+        }
+        .fraction-line {
+            position: relative;
+            width: 100%;
+            height: 0;
+            border-top: 1px solid #000; /* خط کسر */
+            margin-top: 10px;
+        }
+        .numerator, .denominator {
+            position: absolute;
+            width: 60px;
+            text-align: center;
+        }
+        .numerator {
+            top: -25px; /* بالای خط کسر */
+        }
+        .denominator {
+            top: 15px; /* زیر خط کسر */
+        }
+    </style>
+</head>
+<body>
+
+<h1>نمایش کسر روی محور</h1>
+<div class="input-container">
+    <input type="number" id="whole" placeholder="عدد صحیح" />
+    <div class="fraction-line">
+        <div class="numerator">
+            <input type="number" id="numerator" placeholder="صورت" />
+        </div>
+        <div class="denominator">
+            <input type="number" id="denominator" placeholder="مخرج" />
+        </div>
+    </div>
+    <button onclick="drawFraction()">رسم کسر</button>
+</div>
+
+<div id="canvasContainer">
+    <canvas id="canvas"></canvas>
+</div>
+
+<script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    function drawFraction() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // پاک کردن کانواس قبل از رسم
+
+        const whole = parseInt(document.getElementById('whole').value) || 0;
+        const numerator = parseInt(document.getElementById('numerator').value) || 0;
+        const denominator = parseInt(document.getElementById('denominator').value) || 1; // حداقل مخرج 1
+
+        if (denominator === 0 || numerator < 0 || whole < 0) {
+            alert("ورودی معتبر نیست!");
+            return;
+        }
+
+        const totalValue = whole + (numerator / denominator);
+
+        const canvasWidth = canvas.width;
+        const canvasHeight = canvas.height;
+        const axisY = canvasHeight / 2;
+        let maxValue = Math.ceil(totalValue); // حداکثر عدد مورد نظر
+
+        // اگر مقدار کسر بین دو عدد باشد، محور بین آن‌ها تنظیم شود
+        if (whole > 0) {
+            maxValue = Math.max(maxValue, whole + 1);
+        }
+
+        // محاسبه مقیاس برای محور
+        const scaleCount = maxValue < 5 ? maxValue : 5;  // تعیین مقیاس محور بر اساس حداکثر عدد
+
+        // رسم محور
+        ctx.beginPath();
+        ctx.moveTo(50, axisY);
+        ctx.lineTo(canvasWidth - 50, axisY);
+        ctx.stroke();
+
+        // رسم مقیاس محور
+        for (let i = 0; i <= scaleCount; i++) {
+            const x = 50 + (i / scaleCount) * (canvasWidth - 100);
+            ctx.moveTo(x, axisY - 5);
+            ctx.lineTo(x, axisY + 5);
+            ctx.fillText(i, x - 5, axisY + 20);
+        }
+        ctx.stroke();
+
+        // رسم علامت کسر
+        const xPosition = 50 + (totalValue / scaleCount) * (canvasWidth - 100); 
+        ctx.beginPath();
+        ctx.arc(xPosition, axisY, 5, 0, 2 * Math.PI);
+        ctx.fillStyle = "#FF5733"; // رنگ علامت
+        ctx.fill();
+        ctx.stroke();
+
+        // نوشتن مقدار کسر در بالای نقطه
+        ctx.fillText(`${whole} و ${numerator}/${denominator}`, xPosition + 8, axisY - 15);
+    }
+</script>
+
+</body>
+</html>

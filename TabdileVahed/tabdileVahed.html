@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>تبدیل واحدها</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            direction: rtl;
+            text-align: right;
+        }
+
+        .converter {
+            width: 300px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>تبدیل واحدها</h1>
+
+    <div class="converter">
+        <label for="fromUnit">واحد اولیه:</label>
+        <select id="fromUnit" onchange="convertUnits()">
+            <option value="kg">کیلوگرم (kg)</option>
+            <option value="g">گرم (g)</option>
+            <option value="m">متر (m)</option>
+            <option value="cm">سانتی‌متر (cm)</option>
+            <option value="mm">میلی‌متر (mm)</option>
+        </select>
+
+        <input type="number" id="value" placeholder="مقدار" oninput="convertUnits()">
+
+        <label for="toUnit">واحد نهایی:</label>
+        <select id="toUnit" onchange="convertUnits()">
+            <option value="kg">کیلوگرم (kg)</option>
+            <option value="g">گرم (g)</option>
+            <option value="m">متر (m)</option>
+            <option value="cm">سانتی‌متر (cm)</option>
+            <option value="mm">میلی‌متر (mm)</option>
+        </select>
+
+        <p id="result"></p>
+    </div>
+
+    <script>
+        function convertUnits() {
+            const fromUnit = document.getElementById('fromUnit').value;
+            const toUnit = document.getElementById('toUnit').value;
+            const value = parseFloat(document.getElementById('value').value);
+            let result;
+
+            if (isNaN(value)) {
+                document.getElementById('result').textContent = "مقدار وارد شده صحیح نیست.";
+                return;
+            }
+
+            if (fromUnit === toUnit) {
+                result = value;
+            } else if (fromUnit === 'kg' && toUnit === 'g') {
+                result = value * 1000;
+            } else if (fromUnit === 'g' && toUnit === 'kg') {
+                result = value / 1000;
+            } else if (fromUnit === 'm' && toUnit === 'cm') {
+                result = value * 100;
+            } else if (fromUnit === 'cm' && toUnit === 'm') {
+                result = value / 100;
+            } else if (fromUnit === 'cm' && toUnit === 'mm') {
+                result = value * 10;
+            } else if (fromUnit === 'mm' && toUnit === 'cm') {
+                result = value / 10;
+            } else {
+                document.getElementById('result').textContent = "تبدیل این واحدها هنوز پشتیبانی نمی‌شود.";
+                return;
+            }
+
+            document.getElementById('result').textContent = `نتیجه: ${result}`;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بازی تقارن شطرنجی</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif; /* فونت صفحه */
+            background-color: #f0f8ff; /* رنگ پس‌زمینه */
+            text-align: center; /* مرکز چینش متن */
+            padding: 20px; /* فاصله از لبه‌ها */
+        }
+        h1 {
+            color: #2c3e50; /* رنگ عنوان */
+        }
+        .chessboard {
+            display: flex; /* استفاده از فلیکس برای مرکز چینش */
+            justify-content: center; /* مرکز چینش افقی */
+            align-items: center; /* مرکز چینش عمودی */
+            position: relative; /* برای استفاده از موقعیت‌های مطلق */
+            margin: 20px auto; /* فاصله از بالا و پایین */
+        }
+        .board {
+            display: grid; /* استفاده از گرید برای خانه‌ها */
+            grid-template-columns: repeat(10, 30px); /* 10 ستون */
+            grid-template-rows: repeat(8, 30px); /* 8 ردیف */
+            position: relative; /* برای استفاده از موقعیت‌های مطلق */
+        }
+        .cell {
+            width: 30px; /* عرض خانه */
+            height: 30px; /* ارتفاع خانه */
+            border: 1px solid #333; /* حاشیه خانه */
+        }
+        .red-line {
+            position: absolute; /* موقعیت مطلق برای خط تقارن */
+            top: 0; /* از بالا */
+            left: 50%; /* از وسط */
+            width: 2px; /* عرض خط */
+            height: 100%; /* ارتفاع خط */
+            background-color: red; /* رنگ خط */
+            z-index: 1; /* بالاتر از خانه‌ها */
+        }
+        .button {
+            margin-top: 20px; /* فاصله از بالا */
+            padding: 10px 20px; /* فاصله داخلی دکمه */
+            background-color: #3498db; /* رنگ پس‌زمینه دکمه */
+            color: white; /* رنگ متن دکمه */
+            border: none; /* بدون حاشیه */
+            border-radius: 5px; /* گوشه‌های گرد */
+            cursor: pointer; /* نشانگر ماوس */
+            font-size: 16px; /* اندازه فونت */
+        }
+        .button:hover {
+            background-color: #2980b9; /* تغییر رنگ در حالت هاور */
+        }
+    </style>
+</head>
+<body>
+    <h1>بازی تقارن شطرنجی</h1> <!-- عنوان بازی -->
+    <p>رنگ‌ها را طوری انتخاب کنید که سمت چپ با سمت راست متقارن باشد!</p> <!-- توضیحات بازی -->
+    <div class="chessboard">
+        <div class="board" id="chessboard">
+            <div class="red-line"></div> <!-- خط تقارن -->
+            <script>
+                const chessboard = document.getElementById('chessboard'); // انتخاب تخته شطرنج
+                const colors = ['#ff9999', '#99ff99', '#9999ff', '#ffff99', '#ffcc99', '#ff99ff']; // رنگ‌های ممکن
+                let targetCellIndex = null; // ایندکس خانه هدف
+
+                function generateRandomTargetCell() {
+                    targetCellIndex = Math.floor(Math.random() * 40) + 40; // انتخاب یک خانه تصادفی از سمت راست
+                    const randomColor = colors[Math.floor(Math.random() * colors.length)]; // انتخاب رنگ تصادفی
+                    chessboard.children[targetCellIndex].style.backgroundColor = randomColor; // رنگ خانه تصادفی
+                }
+
+                for (let i = 0; i < 80; i++) { // ایجاد 80 خانه برای 8 ردیف و 10 ستون
+                    const cell = document.createElement('div'); // ایجاد یک عنصر div برای هر خانه
+                    cell.className = 'cell'; // اضافه کردن کلاس
+                    cell.style.backgroundColor = '#fff'; // رنگ پیش‌فرض خانه‌ها
+                    cell.addEventListener('click', function() { // افزودن رویداد کلیک
+                        if (targetCellIndex !== null) { // اگر خانه هدف تعیین شده باشد
+                            const selectedCellIndex = i; // ایندکس خانه‌ای که کاربر کلیک کرده
+                            
+                            // بررسی اینکه آیا خانه انتخاب شده در همان ردیف است
+                            const targetRow = Math.floor(targetCellIndex / 10); // ردیف خانه هدف
+                            const selectedRow = Math.floor(selectedCellIndex / 10); // ردیف خانه انتخاب شده
+                            
+                            if (targetRow === selectedRow) { // اگر در همان ردیف باشند
+                                const distanceFromCenter = Math.abs((targetCellIndex % 10) - 6); // فاصله از خط تقارن
+                                const clickedDistanceFromCenter = Math.abs((selectedCellIndex % 10) - 5); // فاصله خانه کلیک شده از خط تقارن
+
+                                // مقایسه فاصله‌ها
+                                if (clickedDistanceFromCenter === distanceFromCenter) {
+                                    this.style.backgroundColor = chessboard.children[targetCellIndex].style.backgroundColor; // رنگ متقارن
+                                    alert("عالی! شما خانه متقارن را انتخاب کردید."); // پیام موفقیت
+                                    generateRandomTargetCell(); // تولید خانه هدف جدید
+                                } else {
+                                    alert("نادرست! لطفا خانه متقارن را انتخاب کنید."); // پیام نادرست
+                                }
+                            } else {
+                                alert("لطفا یک خانه در همان ردیف انتخاب کنید."); // پیام برای انتخاب نادرست ردیف
+                            }
+                        }
+                    });
+                    chessboard.appendChild(cell); // اضافه کردن خانه به تخته
+                }
+
+                generateRandomTargetCell(); // تولید اولین خانه هدف
+            </script>
+        </div>
+    </div>
+    <button class="button" onclick="generateRandomTargetCell()">رنگ کردن خانه تصادفی از سمت راست</button> <!-- دکمه برای رنگ کردن خانه -->
+</body>
+</html>

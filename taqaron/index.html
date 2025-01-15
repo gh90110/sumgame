@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بازی تقارن</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>بازی تقارن</h1>
+    <div class="game-controls">
+        <label for="time-select">زمان بازی:</label>
+        <select id="time-select">
+            <option value="60">1 دقیقه</option>
+            <option value="120">2 دقیقه</option>
+            <option value="180">3 دقیقه</option>
+        </select>
+        <button id="start-button">شروع بازی</button>
+        <span id="timer" class="timer1" ></span>
+    </div>
+    <div class="game-container">
+        <div id="error-message" class="error-message">انتخاب اشتباه!</div>
+        <table id="game-board"></table>
+    </div>
+    <p>امتیاز: <span id="score">0</span></p>
+
+    <script src="script.js"></script>
+</body>
+</html>
