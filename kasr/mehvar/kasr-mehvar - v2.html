@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نمایش کسر روی محور</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            direction: rtl;
+            text-align: right;
+            margin: 20px;
+        }
+        .input-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .fraction-line {
+            display: inline-block;
+            text-align: center;
+        }
+        .fraction-line input {
+            width: 30px;
+            text-align: center;
+        }
+        .fraction-line hr {
+            margin: 5px 0;
+            border-top: 1px solid black;
+            width: 30px;
+        }
+        canvas {
+            border: 1px solid black;
+            margin-top: 10px;
+        }
+        #axis-description {
+            font-size: 14px;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+
+<h1>نمایش کسر روی محور</h1>
+<div class="input-container">
+    <input type="number" id="whole" placeholder="عدد صحیح (حداکثر 9)" max="9" min="0">
+    <div class="fraction-line">
+        <input type="number" id="numerator" placeholder="صورت (حداکثر 9)" max="9" min="0">
+        <hr>
+        <input type="number" id="denominator" placeholder="مخرج (حداکثر 10)" max="10" min="1">
+    </div>
+    <button onclick="drawFractions()">رسم کسر</button>
+</div>
+
+<div id="canvasContainer">
+    <canvas id="canvas" width="600" height="200"></canvas>
+    <div id="axis-description"></div>
+</div>
+
+<script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const description = document.getElementById('axis-description');
+    let axisLevel = 1; // سطح محور (1: اصلی, 2: زوم شده, 3: دقیق)
+    const ordinalNumbers = ["صفر", "یکم", "دوم", "سوم", "چهارم", "پنجم", "ششم", "هفتم", "هشتم", "نهم", "دهم"];
+
+    function drawFractions() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        description.innerHTML = '';
+        const whole = parseInt(document.getElementById('whole').value) || 0;
+        const numerator = parseInt(document.getElementById('numerator').value) || 0;
+        const denominator = parseInt(document.getElementById('denominator').value) || 1;
+
+        if (denominator <= 0 || numerator < 0 || whole < 0 || whole > 9 || numerator > denominator) {
+            alert("ورودی نامعتبر است! لطفا مقادیر صحیح وارد کنید.");
+            return;
+        }
+
+        const totalValue = whole + (numerator / denominator);
+        const nextWholeValue = whole + 1;
+        const axisY = canvas.height / 2;
+
+        if (axisLevel === 1) {
+            drawAxis(0, 10, axisY, "#000", totalValue, 1, "محور اصلی (0 تا 10)");
+        } else if (axisLevel === 2) {
+            drawZoomedAxis(whole, nextWholeValue, axisY, totalValue);
+        } else if (axisLevel === 3) {
+            drawDetailedAxis(whole, nextWholeValue, totalValue, axisY);
+            const descriptionText = generateDescription(numerator, denominator, whole, nextWholeValue);
+            description.innerHTML = descriptionText;
+        }
+    }
+
+    function drawAxis(min, max, y, color, targetValue, level, descriptionText) {
+        const canvasWidth = canvas.width;
+        const segmentWidth = (canvasWidth - 100) / max;
+        ctx.beginPath();
+        ctx.moveTo(50, y);
+        ctx.lineTo(canvasWidth - 50, y);
+        ctx.strokeStyle = color;
+        ctx.stroke();
+
+        for (let i = min; i <= max; i++) {
+            let x = 50 + i * segmentWidth;
+            ctx.beginPath();
+            ctx.moveTo(x, y - 5);
+            ctx.lineTo(x, y + 5);
+            ctx.strokeStyle = color;
+            ctx.stroke();
+            ctx.fillText(i, x - 5, y + 20);
+
+            // Precise target value marking on the main axis
+            if (Math.abs(i - targetValue) < 0.01) {
+                ctx.beginPath();
+                ctx.arc(x, y, 5, 0, 2 * Math.PI);
+                ctx.fillStyle = "#FF5733";
+                ctx.fill();
+                ctx.stroke();
+            }
+        }
+        document.getElementById('axis-description').innerText = descriptionText;
+    }
+
+
+    function drawZoomedAxis(whole, nextWholeValue, axisY, targetValue) {
+        const canvasWidth = canvas.width;
+        const segmentWidth = (canvasWidth - 100) / (nextWholeValue - whole);
+        ctx.beginPath();
+        ctx.moveTo(50, axisY);
+        ctx.lineTo(canvasWidth - 50, axisY);
+        ctx.strokeStyle = "#000";
+        ctx.stroke();
+
+        ctx.fillText(whole, 50 - 10, axisY + 20);
+        ctx.fillText(nextWholeValue, canvasWidth - 50 - 10, axisY + 20);
+
+        //Only marking the whole numbers
+        for (let i = whole; i <= nextWholeValue; i++) {
+            let x = 50 + (i-whole) * segmentWidth;
+            ctx.beginPath();
+            ctx.moveTo(x, axisY - 5);
+            ctx.lineTo(x, axisY + 5);
+            ctx.strokeStyle = "#000";
+            ctx.stroke();
+            ctx.fillText(i, x - 5, axisY + 20);
+        }
+
+
+        const segments = parseInt(document.getElementById('denominator').value);
+        const subSegmentWidth = segmentWidth / segments;
+
+        for (let j = 1; j < segments; j++) {
+            const x = 50 + j * subSegmentWidth;
+            ctx.beginPath();
+            ctx.moveTo(x, axisY - 3);
+            ctx.lineTo(x, axisY + 3);
+            ctx.strokeStyle = "#FF0000";
+            ctx.stroke();
+        }
+
+
+        const targetX = 50 + (targetValue - whole) * segmentWidth;
+        ctx.beginPath();
+        ctx.arc(targetX, axisY, 5, 0, 2 * Math.PI);
+        ctx.fillStyle = "#FF5733";
+        ctx.fill();
+        ctx.stroke();
+
+        document.getElementById('axis-description').innerText = "محور زوم شده (بین " + whole + " و " + nextWholeValue + ")";
+    }
+
+    function drawDetailedAxis(whole, nextWholeValue, totalValue, y) {
+      // ... (This function remains the same)
+    }
+
+    function generateDescription(numerator, denominator, whole, nextWhole) {
+        let description = "";
+        if (numerator === 0) {
+            description = `عدد ${whole} دقیقاً روی محور قرار دارد.`;
+        } else if (numerator < denominator) {
+            description = `${ordinalNumbers[numerator]} ${denominator === 1 ? 'واحد' : ordinalNumbers[denominator]} مانده به عدد ${nextWhole}`;
+        } else {
+            description = `${ordinalNumbers[numerator]} ${denominator === 1 ? 'واحد' : ordinalNumbers[denominator]} بعد از عدد ${whole}`;
+        }
+        return description;
+    }
+
+    function zoom() {
+        axisLevel = (axisLevel % 3) + 1;
+        drawFractions();
+    }
+</script>
+<button onclick="zoom()">بزرگنمایی</button>
+
+</body>
+</html>
