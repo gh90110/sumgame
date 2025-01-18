@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>کسرهای مساوی</title>
+  <style>
+    body {
+      font-family: Tahoma, sans-serif;
+      text-align: center;
+    }
+    .fraction {
+      display: inline-block;
+      text-align: center;
+      margin: 10px;
+    }
+    .numerator, .denominator {
+      padding: 5px;
+      border-bottom: 1px solid black;
+    }
+    .image-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .image-container svg {
+      width: 150px;
+      margin: 0 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>کسرهای مساوی</h1>
+  
+  <p>کسرهای زیر با هم برابر هستند:</p>
+  
+  <div class="fraction">
+    <div class="numerator">1</div>
+    <div class="denominator">2</div>
+  </div>
+  
+  <div class="fraction">
+    <div class="numerator">2</div>
+    <div class="denominator">4</div>
+  </div>
+  
+  <div class="fraction">
+    <div class="numerator">3</div>
+    <div class="denominator">6</div>
+  </div>
+
+  <p>این تصاویر نشان می‌دهند که چگونه کسرهای بالا با هم برابر هستند:</p>
+
+  <div class="image-container">
+    <svg viewBox="0 0 100 100">
+      <rect x="0" y="0" width="100" height="100" fill="#fff" stroke="#000" stroke-width="2"/>
+      <rect x="0" y="0" width="50" height="100" fill="#bfe8fc"/>
+    </svg>
+    <svg viewBox="0 0 100 100">
+      <rect x="0" y="0" width="100" height="100" fill="#fff" stroke="#000" stroke-width="2"/>
+      <rect x="0" y="0" width="50" height="50" fill="#6fd1f7"/>
+      <rect x="0" y="50" width="50" height="50" fill="#6fd1f7"/>
+    </svg>
+    <svg viewBox="0 0 100 100">
+      <rect x="0" y="0" width="100" height="100" fill="#fff" stroke="#000" stroke-width="2"/>
+      <rect x="0" y="0" width="50" height="33.33" fill="#3ebff3"/>
+      <rect x="0" y="33.33" width="50" height="33.33" fill="#3ebff3"/>
+      <rect x="0" y="66.66" width="50" height="33.33" fill="#3ebff3"/>
+    </svg>
+  </div>
+
+  <p>همانطور که می‌بینید، هر کسر نصف کل را نشان می‌دهد.</p>
+
+</body>
+</html>
