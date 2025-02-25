@@ -1,0 +1,231 @@
+import React, { useState } from 'react';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+
+// Utility function to convert numbers to words
+const numberToWords = (number) => {
+  const units = ['', 'یک', 'دو', 'سه', 'چهار', 'پنج', 'شش', 'هفت', 'هشت', 'نه'];
+  const teens = ['ده', 'یازده', 'دوازده', 'سیزده', 'چهارده', 'پانزده', 'شانزده', 'هفده', 'هجده', 'نوزده'];
+  const tens = ['', '', 'بیست', 'سی', 'چهل', 'پنجاه', 'شصت', 'هفتاد', 'هشتاد', 'نود'];
+  const scales = ['', 'هزار', 'میلیون', 'میلیارد'];
+
+  const convertThreeDigits = (num) => {
+    if (num === 0) return '';
+    
+    const [hundreds, rest] = [Math.floor(num / 100), num % 100];
+    let result = hundreds > 0 ? units[hundreds] + ' صد ' : '';
+    
+    if (rest === 0) return result.trim();
+    
+    if (rest < 10) {
+      result += (result ? ' و ' : '') + units[rest];
+    } else if (rest < 20) {
+      result += (result ? ' و ' : '') + teens[rest - 10];
+    } else {
+      const [ten, unit] = [Math.floor(rest / 10), rest % 10];
+      result += (result ? ' و ' : '') + tens[ten];
+      if (unit > 0) {
+        result += ' و ' + units[unit];
+      }
+    }
+    
+    return result.trim();
+  };
+
+  if (number === 0) return 'صفر';
+  
+  let result = '';
+  let remainingNumber = Math.abs(number);
+  let scaleIndex = 0;
+  
+  while (remainingNumber > 0) {
+    const threeDigits = remainingNumber % 1000;
+    if (threeDigits !== 0) {
+      const threeDigitWord = convertThreeDigits(threeDigits);
+      result = threeDigitWord + (scales[scaleIndex] ? ' ' + scales[scaleIndex] : '') + 
+               (result ? ' ' + result : '');
+    }
+    
+    remainingNumber = Math.floor(remainingNumber / 1000);
+    scaleIndex++;
+  }
+  
+  return number < 0 ? 'منفی ' + result : result;
+};
+
+// Utility function to convert words to numbers
+const wordsToNumber = (words) => {
+  const wordToNumberMap = {
+    'صفر': 0, 'یک': 1, 'دو': 2, 'سه': 3, 'چهار': 4, 'پنج': 5, 
+    'شش': 6, 'هفت': 7, 'هشت': 8, 'نه': 9, 'ده': 10,
+    'یازده': 11, 'دوازده': 12, 'سیزده': 13, 'چهارده': 14, 
+    'پانزده': 15, 'شانزده': 16, 'هفده': 17, 'هجده': 18, 'نوزده': 19,
+    'بیست': 20, 'سی': 30, 'چهل': 40, 'پنجاه': 50, 
+    'شصت': 60, 'هفتاد': 70, 'هشتاد': 80, 'نود': 90,
+    'صد': 100, 'هزار': 1000, 'میلیون': 1000000, 'میلیارد': 1000000000
+  };
+
+  const cleanWords = words.replace(/\s+/g, ' ').trim().split(' ');
+  let total = 0;
+  let currentNumber = 0;
+
+  for (let i = 0; i < cleanWords.length; i++) {
+    const word = cleanWords[i];
+    const value = wordToNumberMap[word];
+
+    if (value === undefined) {
+      return null; // Invalid word
+    }
+
+    if (value === 100) {
+      currentNumber = (currentNumber || 1) * 100;
+    } else if (value === 1000 || value === 1000000 || value === 1000000000) {
+      currentNumber = currentNumber || 1;
+      total += currentNumber * value;
+      currentNumber = 0;
+    } else if (value >= 1 && value <= 19) {
+      currentNumber += value;
+    } else if (value >= 20 && value <= 90) {
+      currentNumber += value;
+    }
+  }
+
+  return total + currentNumber;
+};
+
+const NumberLearningApp = () => {
+  const [level, setLevel] = useState(null);
+  const [mode, setMode] = useState(null);
+  const [currentNumber, setCurrentNumber] = useState(null);
+  const [userInput, setUserInput] = useState('');
+  const [score, setScore] = useState(0);
+  const [totalQuestions, setTotalQuestions] = useState(0);
+
+  const generateNumber = (digits) => {
+    const min = Math.pow(10, digits - 1);
+    const max = Math.pow(10, digits) - 1;
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  };
+
+  const startGame = (selectedLevel) => {
+    let digits;
+    switch (selectedLevel) {
+      case 'third': digits = 6; break;
+      case 'fourth': digits = 9; break;
+      case 'fifth': digits = 12; break;
+      default: digits = 6;
+    }
+    setLevel(selectedLevel);
+    setCurrentNumber(generateNumber(digits));
+    setScore(0);
+    setTotalQuestions(0);
+    setMode('practice');
+  };
+
+  const checkAnswer = () => {
+    let correct = false;
+    if (mode === 'number_to_words') {
+      correct = userInput.trim() === numberToWords(currentNumber);
+    } else if (mode === 'words_to_number') {
+      correct = wordsToNumber(userInput.trim()) === currentNumber;
+    }
+
+    if (correct) {
+      setScore(score + 1);
+    }
+    setTotalQuestions(totalQuestions + 1);
+    setCurrentNumber(generateNumber(level === 'third' ? 6 : level === 'fourth' ? 9 : 12));
+    setUserInput('');
+  };
+
+  const renderContent = () => {
+    if (!level) {
+      return (
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold">انتخاب پایه تحصیلی</h2>
+          <Button onClick={() => startGame('third')} className="w-full">
+            کلاس سوم (6 رقم)
+          </Button>
+          <Button onClick={() => startGame('fourth')} className="w-full">
+            کلاس چهارم (9 رقم)
+          </Button>
+          <Button onClick={() => startGame('fifth')} className="w-full">
+            کلاس پنجم (12 رقم)
+          </Button>
+        </div>
+      );
+    }
+
+    if (!mode) {
+      return (
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold">انتخاب نوع تمرین</h2>
+          <Button onClick={() => setMode('number_to_words')} className="w-full">
+            تبدیل عدد به کلمه
+          </Button>
+          <Button onClick={() => setMode('words_to_number')} className="w-full">
+            تبدیل کلمه به عدد
+          </Button>
+        </div>
+      );
+    }
+
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            {mode === 'number_to_words' ? 'تبدیل عدد به کلمه' : 'تبدیل کلمه به عدد'}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {mode === 'number_to_words' && (
+            <div className="text-center text-4xl font-bold mb-4">
+              {currentNumber}
+            </div>
+          )}
+          {mode === 'words_to_number' && (
+            <div className="text-center text-4xl font-bold mb-4">
+              {numberToWords(currentNumber)}
+            </div>
+          )}
+          <Input
+            value={userInput}
+            onChange={(e) => setUserInput(e.target.value)}
+            placeholder={mode === 'number_to_words' ? 'پاسخ را به کلمه بنویسید' : 'عدد را بنویسید'}
+            className="w-full"
+          />
+        </CardContent>
+        <CardFooter>
+          <div className="w-full">
+            <Button onClick={checkAnswer} className="w-full">
+              تأیید پاسخ
+            </Button>
+            <div className="mt-4 text-center">
+              امتیاز: {score} از {totalQuestions}
+            </div>
+          </div>
+        </CardFooter>
+      </Card>
+    );
+  };
+
+  return (
+    <div className="container mx-auto p-4 max-w-md">
+      {renderContent()}
+      {level && mode && (
+        <Button 
+          onClick={() => {
+            setLevel(null);
+            setMode(null);
+          }} 
+          className="mt-4 w-full"
+        >
+          بازگشت به انتخاب پایه
+        </Button>
+      )}
+    </div>
+  );
+};
+
+export default NumberLearningApp;

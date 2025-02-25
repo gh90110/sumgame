@@ -1,0 +1,130 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        /**
+ * تابع تبدیل اعداد به حروف با پشتیبانی کامل از اعداد بزرگ و منفی
+ * @param {number} number - عدد مورد نظر برای تبدیل به حروف
+ * @returns {string} - رشته حروف معادل عدد
+ */
+function numberToWords(number) {
+    // بررسی اعداد خاص
+    if (number === 0) return 'صفر';
+    
+    // متغیرهای ثابت برای تبدیل
+    const units = ['', 'یک', 'دو', 'سه', 'چهار', 'پنج', 'شش', 'هفت', 'هشت', 'نه'];
+    const teens = ['ده', 'یازده', 'دوازده', 'سیزده', 'چهارده', 'پانزده', 'شانزده', 'هفده', 'هجده', 'نوزده'];
+    const tens = ['', '', 'بیست', 'سی', 'چهل', 'پنجاه', 'شصت', 'هفتاد', 'هشتاد', 'نود'];
+    const scales = ['', 'هزار', 'میلیون', 'میلیارد', 'تریلیون', 'کوادریلیون', 'کوینتیلیون'];
+    const hundreds = ['', 'صد', 'دویست', 'سیصد', 'چهارصد', 'پانصد', 'ششصد', 'هفتصد', 'هشتصد', 'نهصد'];
+
+    // تابع داخلی برای تبدیل سه رقم
+    function convertThreeDigits(num) {
+        // اگر عدد صفر باشد، رشته خالی برگردانده می‌شود
+        if (num === 0) return '';
+        
+        // محاسبه صدگان، دهگان و یکان
+        const [hundreds_digit, rest] = [Math.floor(num / 100), num % 100];
+        let result = '';
+        
+        // اضافه کردن صدگان
+        if (hundreds_digit > 0) {
+            result += hundreds[hundreds_digit];
+        }
+        
+        // اضافه کردن دهگان و یکان
+        if (rest > 0) {
+            // اگر صدگان وجود داشته باشد، از کلمه "و" استفاده می‌شود
+            if (result) result += ' و ';
+            
+            if (rest < 10) {
+                // اعداد 1 تا 9
+                result += units[rest];
+            } else if (rest < 20) {
+                // اعداد 10 تا 19
+                result += teens[rest - 10];
+            } else {
+                // اعداد 20 به بالا
+                const [ten, unit] = [Math.floor(rest / 10), rest % 10];
+                result += tens[ten];
+                
+                // اضافه کردن یکان
+                if (unit > 0) {
+                    result += ' و ' + units[unit];
+                }
+            }
+        }
+        
+        return result.trim();
+    }
+
+    // بررسی اعداد منفی
+    let isNegative = number < 0;
+    number = Math.abs(number);
+
+    // تبدیل عدد به آرایه سه رقمی
+    const numberGroups = [];
+    while (number > 0) {
+        numberGroups.push(number % 1000);
+        number = Math.floor(number / 1000);
+    }
+
+    // تبدیل گروه‌های سه رقمی به حروف
+    const wordGroups = numberGroups.map((group, index) => {
+        const groupWord = convertThreeDigits(group);
+        
+        // اضافه کردن مقیاس (هزار، میلیون و...)
+        if (groupWord && index > 0) {
+            return groupWord + ' ' + scales[index];
+        }
+        
+        return groupWord;
+    }).filter(group => group !== '');
+
+    // معکوس کردن آرایه برای مرتب‌سازی صحیح
+    let result = wordGroups.reverse().join(' و ');
+
+    // اضافه کردن علامت منفی در صورت نیاز
+    if (isNegative) {
+        result = 'منفی ' + result;
+    }
+
+    return result.trim();
+}
+
+// توابع کمکی برای آزمایش
+function testNumberToWords() {
+    const testCases = [
+        0, 
+        7, 
+        13, 
+        20, 
+        45, 
+        100, 
+        123, 
+        200, 
+        500, 
+        1000, 
+        1234, 
+        10000, 
+        123456, 
+        1000000, 
+        -1234567,
+        1234567890
+    ];
+
+    testCases.forEach(number => {
+        console.log(`${number} : ${numberToWords(number)}`);
+    });
+}
+
+// اجرای آزمون
+testNumberToWords();
+    </script>
+    
+</body>
+</html>
