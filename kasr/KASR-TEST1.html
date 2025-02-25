@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>آزمون کسر با دایره</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            direction: rtl;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            color: #333;
+            margin-top: 20px;
+        }
+        .circle-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 20px auto;
+            background-color: #fff;
+            border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        .circle {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid #333;
+            position: relative;
+            overflow: hidden;
+            background-color: #f0f0f0;
+        }
+        .slice {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            transform: rotate(-90deg); /* چرخش اولیه برای شروع از ساعت ۶ */
+            transform-origin: center;
+            z-index: 1;
+        }
+        .line {
+            position: absolute;
+            width: 2px;
+            height: 50%;
+            background-color: #333;
+            top: 50%;
+            left: 50%;
+            transform-origin: top center;
+            z-index: 2;
+        }
+        .options {
+            margin-top: 30px;
+        }
+        .options button {
+            margin: 10px;
+            padding: 15px 30px;
+            font-size: 18px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+        .options button:hover {
+            background-color: #0056b3;
+        }
+        #score {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 20px;
+            color: #333;
+        }
+        #feedback {
+            font-size: 20px;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        #restart {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #28a745;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+        #restart:hover {
+            background-color: #218838;
+        }
+        .fraction {
+            display: inline-block;
+            text-align: center;
+            font-size: 18px;
+            position: relative;
+        }
+        .fraction sup {
+            display: block;
+            font-size: 14px;
+            line-height: 1;
+        }
+        .fraction sub {
+            display: block;
+            font-size: 14px;
+            line-height: 1;
+        }
+        .fraction::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background-color: rgb(241, 242, 242); /* خط کسری */
+        }
+        #timer {
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 10px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>آزمون کسر با دایره</h1>
+    <div id="score">امتیاز شما: ۰ | درست: ۰ | غلط: ۰</div>
+    <div id="timer">زمان باقی‌مانده: ۱:۰۰</div>
+    <div class="circle-container">
+        <div class="circle">
+            <div id="lines"></div>
+            <div id="slice" class="slice"></div>
+        </div>
+    </div>
+    <div class="options" id="options"></div>
+    <p id="feedback"></p>
+    <button id="restart">شروع مجدد</button>
+
+    <script>
+        let score = 0;
+        let correctCount = 0;
+        let wrongCount = 0;
+        let timer;
+        let timeLeft = 60; // زمان باقی‌مانده به ثانیه
+        const scoreElement = document.getElementById("score");
+        const feedbackElement = document.getElementById("feedback");
+        const restartButton = document.getElementById("restart");
+        const timerElement = document.getElementById("timer");
+
+        // تابع برای نمایش کسر به صورت صحیح
+        function formatFraction(numerator, denominator) {
+            return `<span class="fraction"><sup>${numerator}</sup><sub>${denominator}</sub></span>`;
+        }
+
+        // تابع برای تولید گزینه‌های منحرف‌کننده
+        function generateDistractors(correctPart, totalParts) {
+            const distractors = [];
+
+            // جابه‌جایی صورت و مخرج
+            distractors.push(`${totalParts}/${correctPart}`);
+
+            // تغییر مخرج به یک عدد تصادفی
+            const wrongDenominator = Math.floor(Math.random() * 8) + 2; // مخرج تصادفی بین ۲ تا ۹
+            if (wrongDenominator !== totalParts) {
+                distractors.push(`${correctPart}/${wrongDenominator}`);
+            }
+
+            return distractors;
+        }
+
+        function generateRandomFraction() {
+            const totalParts = Math.floor(Math.random() * 10) +1; // ۴ تا ۱۰ بخش
+            const correctPart = Math.floor(Math.random() * totalParts) + 0;
+            const correctAnswer = `${correctPart}/${totalParts}`;
+
+            // تولید گزینه‌های منحرف‌کننده
+            const distractors = generateDistractors(correctPart, totalParts);
+
+            // تولید تمام کسرهای ممکن (شامل صفر)
+            const allPossibleFractions = Array.from({ length: totalParts + 1 }, (_, i) => `${i}/${totalParts}`);
+            const otherFractions = allPossibleFractions.filter(f => f !== correctAnswer && !distractors.includes(f));
+
+            // تعداد گزینه‌ها (۳ تا ۵)
+            const desiredOptionsCount = Math.min(Math.floor(Math.random() * 3) + 3, allPossibleFractions.length + distractors.length);
+            const options = [correctAnswer, ...distractors];
+
+            // اضافه کردن گزینه‌های تصادفی دیگر
+            while (options.length < desiredOptionsCount && otherFractions.length > 0) {
+                const randomIndex = Math.floor(Math.random() * otherFractions.length);
+                options.push(otherFractions[randomIndex]);
+                otherFractions.splice(randomIndex, 1);
+            }
+
+            options.sort(() => Math.random() - 0.5); // به‌هم ریختن گزینه‌ها
+            return { totalParts, correctPart, correctAnswer, options };
+        }
+
+        function drawLines(totalParts) {
+            const linesContainer = document.getElementById("lines");
+            linesContainer.innerHTML = "";
+            for (let i = 0; i < totalParts; i++) {
+                const line = document.createElement("div");
+                line.className = "line";
+                line.style.transform = `rotate(${(360 / totalParts) * i}deg)`;
+                linesContainer.appendChild(line);
+            }
+        }
+
+        function colorSlice(correctPart, totalParts) {
+            const slice = document.getElementById("slice");
+            if (correctPart === totalParts) {
+                slice.style.background = "rgba(0, 123, 255, 0.5)";
+            } else {
+                const angle = (360 / totalParts) * correctPart;
+                slice.style.background = `
+                    conic-gradient(
+                        from 270deg, /* شروع از ساعت ۶ */
+                        rgba(0, 123, 255, 0.5) 0deg ${angle}deg,
+                        transparent ${angle}deg 360deg
+                    )
+                `;
+            }
+        }
+
+        function createOptions(options, correctAnswer) {
+            const optionsContainer = document.getElementById("options");
+            optionsContainer.innerHTML = "";
+            options.forEach(option => {
+                const button = document.createElement("button");
+                const [numerator, denominator] = option.split("/");
+                button.innerHTML = formatFraction(numerator, denominator);
+                button.onclick = () => checkAnswer(option, correctAnswer);
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        function checkAnswer(selected, correctAnswer) {
+            if (selected === correctAnswer) {
+                feedbackElement.textContent = "✅ پاسخ صحیح!";
+                feedbackElement.style.color = "green";
+                score += 10;
+                correctCount++;
+                generateNewQuestion();
+            } else {
+                feedbackElement.textContent = `❌ پاسخ اشتباه! ${correctAnswer.split("/")[0]} قسمت از ${correctAnswer.split("/")[1]} قسمت مساوی رنگ شده است. پس گزینه درست ${correctAnswer} است.`;
+                feedbackElement.style.color = "red";
+                wrongCount++;
+            }
+            scoreElement.textContent = `امتیاز شما: ${score} | درست: ${correctCount} | غلط: ${wrongCount}`;
+
+        }
+
+        function generateNewQuestion() {
+            try {
+                const { totalParts, correctPart, correctAnswer, options } = generateRandomFraction();
+                drawLines(totalParts);
+                colorSlice(correctPart, totalParts);
+                createOptions(options, correctAnswer);
+            } catch (error) {
+                console.error("خطا:", error);
+                alert("خطایی رخ داد. صفحه را بازنشانی کنید.");
+            }
+        }
+
+        // تابع برای شروع تایمر
+        function startTimer() {
+            timer = setInterval(() => {
+                timeLeft--;
+                timerElement.textContent = `زمان باقی‌مانده: ${Math.floor(timeLeft / 60)}:${(timeLeft % 60).toString().padStart(2, '0')}`;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    alert("زمان به پایان رسید!");
+                    feedbackElement.textContent = "زمان به پایان رسید!";
+                    document.querySelectorAll(".options button").forEach(button => button.disabled = true);
+                }
+            }, 1000);
+        }
+
+        // شروع مجدد
+        restartButton.onclick = () => {
+            clearInterval(timer);
+            timeLeft = 60;
+            timerElement.textContent = `زمان باقی‌مانده: ۱:۰۰`;
+            score = 0;
+            correctCount = 0;
+            wrongCount = 0;
+            scoreElement.textContent = `امتیاز شما: ${score} | درست: ${correctCount} | غلط: ${wrongCount}`;
+            feedbackElement.textContent = "";
+            document.querySelectorAll(".options button").forEach(button => button.disabled = false);
+            generateNewQuestion();
+            startTimer();
+        };
+
+        // شروع برنامه
+        generateNewQuestion();
+        startTimer();
+    </script>
+</body>
+</html>

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تمرین جدول ضرب</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            text-align: center;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #2B3467;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-group {
+            margin: 20px 0;
+        }
+
+        label {
+            font-size: 18px;
+            margin-right: 10px;
+        }
+
+        select, button {
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            background-color: #2B3467;
+            color: white;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background-color: #1A2238;
+        }
+
+        .question {
+            font-size: 24px;
+            margin: 20px 0;
+        }
+
+        .timer, .score {
+            font-size: 20px;
+            margin: 10px 0;
+        }
+
+        .feedback {
+            font-size: 18px;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .correct {
+            background-color: #C7F4C2;
+            color: #2B7A0B;
+        }
+
+        .wrong {
+            background-color: #FFDEDE;
+            color: #D21312;
+        }
+
+        .practice-list {
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .practice-list h3 {
+            color: #2B3467;
+        }
+
+        .practice-item {
+            margin: 10px 0;
+        }
+
+        .shapes {
+            display: flex;
+            gap: 5px;
+            margin-top: 5px;
+        }
+
+        .shape {
+            width: 20px;
+            height: 20px;
+            background-color: #EB455F;
+            border-radius: 50%;
+        }
+
+        .calculator {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 20px auto;
+            max-width: 300px;
+        }
+
+        .calculator button {
+            font-size: 20px;
+            padding: 15px;
+            background-color: #f0f0f0;
+            color: #333;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .calculator button:hover {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>تمرین جدول ضرب 🎲</h1>
+        <div class="input-group">
+            <label for="number">عدد مورد نظر را انتخاب کنید:</label>
+            <select id="number">
+                <option value="1">۱</option>
+                <option value="2">۲</option>
+                <option value="3">۳</option>
+                <option value="4">۴</option>
+                <option value="5">۵</option>
+                <option value="6">۶</option>
+                <option value="7">۷</option>
+                <option value="8">۸</option>
+                <option value="9">۹</option>
+                <option value="10">۱۰</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label for="mode">حالت تمرین:</label>
+            <select id="mode">
+                <option value="ordered">منظم</option>
+                <option value="random">تصادفی</option>
+            </select>
+        </div>
+        <button onclick="startGame()">شروع بازی</button>
+
+        <div class="question" id="question"></div>
+        <div class="timer" id="timer">زمان کلی: ۶۰ ثانیه | زمان سوال: ۱۰ ثانیه</div>
+        <div class="score" id="score">امتیاز: ۰</div>
+        <div class="feedback" id="feedback"></div>
+
+        <div class="calculator" id="calculator">
+            <button onclick="addDigit('1')">۱</button>
+            <button onclick="addDigit('2')">۲</button>
+            <button onclick="addDigit('3')">۳</button>
+            <button onclick="addDigit('4')">۴</button>
+            <button onclick="addDigit('5')">۵</button>
+            <button onclick="addDigit('6')">۶</button>
+            <button onclick="addDigit('7')">۷</button>
+            <button onclick="addDigit('8')">۸</button>
+            <button onclick="addDigit('9')">۹</button>
+            <button onclick="addDigit('0')">۰</button>
+            <button onclick="submitAnswer()">تأیید</button>
+            <button onclick="clearAnswer()">پاک کردن</button>
+        </div>
+
+        <div class="practice-list" id="practiceList">
+            <h3>لیست تمرین 📝</h3>
+        </div>
+    </div>
+
+    <script>
+        let currentNumber = 1;
+        let currentMultiplier = 1;
+        let score = 0;
+        let timeLeft = 60; // زمان کلی: ۱ دقیقه
+        let questionTimeLeft = 10; // زمان هر سوال: ۱۰ ثانیه
+        let timer;
+        let questionTimer;
+        let practiceList = [];
+        let userAnswer = '';
+
+        function startGame() {
+            const number = parseInt(document.getElementById('number').value);
+            const mode = document.getElementById('mode').value;
+            currentNumber = number;
+            currentMultiplier = mode === 'ordered' ? 1 : Math.floor(Math.random() * 10) + 1;
+            score = 0;
+            timeLeft = 60;
+            questionTimeLeft = 10;
+            userAnswer = '';
+            document.getElementById('score').textContent = `امتیاز: ${score}`;
+            document.getElementById('practiceList').innerHTML = '<h3>لیست تمرین 📝</h3>';
+            practiceList = [];
+            startTimers();
+            askQuestion();
+        }
+
+        function startTimers() {
+            timer = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').textContent = `زمان کلی: ${timeLeft} ثانیه | زمان سوال: ${questionTimeLeft} ثانیه`;
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function askQuestion() {
+            if (timeLeft <= 0) {
+                endGame();
+                return;
+            }
+
+            document.getElementById('question').textContent = `${currentNumber} × ${currentMultiplier} = ?`;
+            document.getElementById('feedback').textContent = '';
+            userAnswer = '';
+            questionTimeLeft = 10;
+
+            questionTimer = setInterval(() => {
+                questionTimeLeft--;
+                document.getElementById('timer').textContent = `زمان کلی: ${timeLeft} ثانیه | زمان سوال: ${questionTimeLeft} ثانیه`;
+                if (questionTimeLeft <= 0) {
+                    clearInterval(questionTimer);
+                    handleTimeout();
+                }
+            }, 1000);
+        }
+
+        function addDigit(digit) {
+            userAnswer += digit;
+        }
+
+        function clearAnswer() {
+            userAnswer = '';
+        }
+
+        function submitAnswer() {
+            const correctAnswer = currentNumber * currentMultiplier;
+            clearInterval(questionTimer);
+
+            if (parseInt(userAnswer) === correctAnswer) {
+                score += 5;
+                document.getElementById('feedback').textContent = 'آفرین! پاسخ درست است 🎉';
+                document.getElementById('feedback').className = 'feedback correct';
+            } else {
+                score -= 5;
+                document.getElementById('feedback').textContent = `متاسفانه پاسخ اشتباه است. جواب صحیح: ${correctAnswer}`;
+                document.getElementById('feedback').className = 'feedback wrong';
+                practiceList.push(`${currentNumber} × ${currentMultiplier} = ${correctAnswer}`);
+            }
+
+            document.getElementById('score').textContent = `امتیاز: ${score}`;
+            nextQuestion();
+        }
+
+        function handleTimeout() {
+            const correctAnswer = currentNumber * currentMultiplier;
+            document.getElementById('feedback').textContent = `زمان تمام شد! جواب صحیح: ${correctAnswer}`;
+            document.getElementById('feedback').className = 'feedback wrong';
+            practiceList.push(`${currentNumber} × ${currentMultiplier} = ${correctAnswer}`);
+            score -= 5;
+            document.getElementById('score').textContent = `امتیاز: ${score}`;
+            nextQuestion();
+        }
+
+        function nextQuestion() {
+            const mode = document.getElementById('mode').value;
+            currentMultiplier = mode === 'ordered' ? currentMultiplier + 1 : Math.floor(Math.random() * 10) + 1;
+            if (mode === 'ordered' && currentMultiplier > 10) {
+                endGame();
+                return;
+            }
+            askQuestion();
+        }
+
+        function endGame() {
+            clearInterval(timer);
+            clearInterval(questionTimer);
+            document.getElementById('question').textContent = 'بازی تمام شد!';
+            document.getElementById('timer').textContent = '';
+            showPracticeList();
+        }
+
+        function showPracticeList() {
+            const practiceListElement = document.getElementById('practiceList');
+            practiceList.forEach(item => {
+                const [question, answer] = item.split(' = ');
+                const practiceItem = document.createElement('div');
+                practiceItem.className = 'practice-item';
+                practiceItem.innerHTML = `
+                    <div>${question} = ${answer}</div>
+                    <div class="shapes">
+                        ${Array.from({ length: parseInt(answer) }, (_, i) => `<div class="shape"></div>`).join('')}
+                    </div>
+                `;
+                practiceListElement.appendChild(practiceItem);
+            });
+        }
+    </script>
+</body>
+</html>

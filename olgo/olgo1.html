@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بازی الگوهای عددی پیشرفته</title>
+    <style>
+        :root {
+            --main-color: #2B3467;
+            --accent-color: #EB455F;
+            --bg-color: #F0F9FF;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--main-color);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(45deg, var(--main-color), var(--accent-color));
+            border-radius: 15px;
+            color: white;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(43, 52, 103, 0.2);
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .exercise-box {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+            transition: transform 0.3s;
+        }
+
+        .exercise-box:hover {
+            transform: translateY(-5px);
+        }
+
+        .number-pattern {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 25px 0;
+        }
+
+        .number-card {
+            background: var(--accent-color);
+            color: white;
+            width: 70px;
+            height: 70px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .number-card::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.1);
+            transform: skewX(-15deg);
+            left: -150%;
+            transition: 0.3s;
+        }
+
+        .number-card:hover::after {
+            left: 150%;
+        }
+
+        .hidden-number {
+            background: var(--main-color);
+            cursor: pointer;
+        }
+
+        .answer-input {
+            font-size: 24px;
+            width: 120px;
+            text-align: center;
+            padding: 12px;
+            border: 3px solid var(--main-color);
+            border-radius: 12px;
+            margin: 10px;
+            transition: 0.3s;
+        }
+
+        .answer-input:focus {
+            border-color: var(--accent-color);
+            outline: none;
+            box-shadow: 0 0 8px rgba(235, 69, 95, 0.3);
+        }
+
+        .check-button {
+            background: linear-gradient(45deg, var(--main-color), var(--accent-color));
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 18px;
+            margin: 15px;
+            transition: 0.3s;
+        }
+
+        .check-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(43, 52, 103, 0.3);
+        }
+
+        .score {
+            font-size: 24px;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: var(--accent-color);
+            pointer-events: none;
+        }
+
+        @keyframes confetti-fall {
+            0% { transform: translateY(-100vh) rotate(0deg); }
+            100% { transform: translateY(100vh) rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 بازی هوش ریاضی پیشرفته 🔢</h1>
+            <div class="score-board">
+                <div>🏆 امتیاز برتر: <span id="highScore">0</span></div>
+                <div>⭐ امتیاز فعلی: <span id="currentScore">0</span></div>
+            </div>
+        </div>
+
+        <div class="exercise-box">
+            <div class="number-pattern" id="patternContainer"></div>
+            <input type="number" class="answer-input" id="userAnswer" placeholder="پاسخ تو">
+            <button class="check-button" onclick="checkAnswer()">بررسی پاسخ</button>
+        </div>
+    </div>
+
+    <script>
+        let currentScore = 0;
+        let highScore = localStorage.getItem('highScore') || 0;
+        let currentPattern = null;
+        let difficulty = 1;
+
+        const patternTypes = {
+            add: {name: 'جمع', base: () => Math.floor(Math.random() * 10) + 1, step: () => Math.floor(Math.random() * 5) + 1},
+            multiply: {name: 'ضرب', base: () => Math.floor(Math.random() * 5) + 1, step: () => Math.floor(Math.random() * 3) + 2},
+            mixed: {name: 'ترکیبی', base: () => Math.floor(Math.random() * 20) + 1, step: () => Math.floor(Math.random() * 5) + 1}
+        };
+
+        function generatePattern() {
+            const types = Object.keys(patternTypes);
+            const type = types[Math.floor(Math.random() * types.length)];
+            const {base, step} = patternTypes[type];
+            
+            currentPattern = {
+                type,
+                values: [],
+                hiddenIndex: Math.floor(Math.random() * 5),
+                base: base(),
+                step: step()
+            };
+
+            // Generate pattern values
+            let current = currentPattern.base;
+            for(let i = 0; i < 5; i++) {
+                currentPattern.values.push(current);
+                current = type === 'add' ? current + currentPattern.step :
+                         type === 'multiply' ? current * currentPattern.step :
+                         i % 2 === 0 ? current + currentPattern.step : current * 2;
+            }
+
+            displayPattern();
+        }
+
+        function displayPattern() {
+            const container = document.getElementById('patternContainer');
+            container.innerHTML = '';
+            
+            currentPattern.values.forEach((value, index) => {
+                const card = document.createElement('div');
+                card.className = `number-card ${index === currentPattern.hiddenIndex ? 'hidden-number' : ''}`;
+                card.textContent = index === currentPattern.hiddenIndex ? '?' : value;
+                container.appendChild(card);
+            });
+
+            // Increase difficulty every 3 correct answers
+            if(currentScore % 3 === 0 && currentScore !== 0) {
+                difficulty = Math.min(3, difficulty + 1);
+            }
+        }
+
+        function createConfetti() {
+            for(let i = 0; i < 30; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.background = `hsl(${Math.random() * 360}, 70%, 60%)`;
+                confetti.style.animation = `confetti-fall ${Math.random() * 3 + 2}s linear`;
+                document.body.appendChild(confetti);
+                
+                setTimeout(() => confetti.remove(), 3000);
+            }
+        }
+
+        function checkAnswer() {
+            const userAnswer = parseInt(document.getElementById('userAnswer').value);
+            const correctAnswer = currentPattern.values[currentPattern.hiddenIndex];
+            
+            if(userAnswer === correctAnswer) {
+                currentScore += difficulty * 10;
+                if(currentScore > highScore) {
+                    highScore = currentScore;
+                    localStorage.setItem('highScore', highScore);
+                }
+                createConfetti();
+            } else {
+                currentScore = Math.max(0, currentScore - 5);
+            }
+
+            document.getElementById('currentScore').textContent = currentScore;
+            document.getElementById('highScore').textContent = highScore;
+            generatePattern();
+            document.getElementById('userAnswer').value = '';
+        }
+
+        // Initialize game
+        document.getElementById('highScore').textContent = highScore;
+        generatePattern();
+    </script>
+</body>
+</html>

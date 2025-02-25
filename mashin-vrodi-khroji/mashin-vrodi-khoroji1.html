@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ماشین‌های ورودی و خروجی اعداد</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .changed_message {
+           display:none;
+           position:relative;
+           top:0 ;
+           padding: 10px;
+           background-color: rgba(222, 224, 91, 0.8);
+           color: rgb(21, 4, 68);
+           border-radius: 5px;
+}
+        
+        .machine {
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+        input {
+            padding: 10px;
+            margin: 10px 0;
+            width: 80%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .output {
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: #333;
+        }
+        .question {
+            margin-top: 30px;
+        }
+        .feedback {
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: #333;
+        }
+        .score {
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: #333;
+        }
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            margin: 10px 0;
+        }
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+        }
+        .radio-group input {
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>ماشین‌های ورودی و خروجی اعداد</h1>
+    <h1> زینب  </h1>
+<div>
+    <button onclick="processNumber()">
+        دگمه من
+        </button>
+    </div>
+    <div class="machine">
+        
+        <p>یک عدد وارد کنید و ببینید چه اتفاقی می‌افتد!</p>
+        <input type="number" id="inputNumber" placeholder="عدد خود را وارد کنید">
+        <button onclick="processNumber()">حساب کن</button>
+        <div class="output" id="outputResult"></div>
+        <button onclick="changeMachineBehavior()">تغییر عملکرد ماشین</button>
+        <div id="res" class="changed_message">نتیجه:</div>
+    </div>
+    <div id="changed_message" class="changed_message">عملکرد ماشین عوض  شد!</div>
+
+    <div class="question">
+        <p>به نظر شما این ماشین چه کاری انجام می‌دهد؟</p>
+        <form id="quizForm">
+            <div class="radio-group">
+                <label><input type="radio" name="operation" value="multiply" onchange="checkAnswer()"> عدد را در یک مقدار ضرب می‌کند</label>
+                <label><input type="radio" name="operation" value="add" onchange="checkAnswer()"> یک مقدار به عدد اضافه می‌کند</label>
+                <label><input type="radio" name="operation" value="subtract" onchange="checkAnswer()"> یک مقدار از عدد کم می‌کند</label>
+            </div>
+        </form>
+        <div class="feedback" id="feedback"></div>
+    </div>
+
+    <div class="question" id="detailedQuestion" style="display: none;">
+        <p>چه عددی اضافه یا ضرب می‌شود؟</p>
+        <input type="number" id="detailedInput" placeholder="عدد را وارد کنید">
+        <button onclick="checkDetailedAnswer()">بررسی پاسخ</button>
+        <div class="feedback" id="detailedFeedback"></div>
+    </div>
+
+    <div class="score">
+        <p>امتیاز شما: <span id="scoreValue">0</span></p>
+    </div>
+
+    <script>
+        let currentOperation;
+        let currentValue;
+        let score = 0;
+
+        const operations = [
+            { type: 'multiply', value: Math.floor(Math.random() * 10) + 1 },
+            { type: 'add', value: Math.floor(Math.random() * 10) + 1 },
+            { type: 'subtract', value: Math.floor(Math.random() * 10) + 1 }
+        ];
+        function show_changed_mashin() {    // تابع اضافه شده برای نشان داد ن پیام تغییر وضعیت ماشین
+            changed_message.style.display = 'block';
+            setTimeout(() => {
+            changed_message.style.display = 'none';
+           }, 1000);
+        }
+
+        function getRandomOperation() {
+            return operations[Math.floor(Math.random() * operations.length)];
+        }
+
+        function changeMachineBehavior() {
+            const operation = getRandomOperation();
+            currentOperation = operation.type;
+            currentValue = operation.value;
+            document.getElementById('outputResult').innerText = '';
+            document.getElementById('feedback').innerText = '';
+            document.getElementById('detailedQuestion').style.display = 'none';
+            document.getElementById('detailedFeedback').innerText = '';
+            // alert('عملکرد ماشین تغییر کرد!');
+            show_changed_mashin()  //// تفییرات من
+        }
+
+        function processNumber() {
+            const input = document.getElementById('inputNumber').value;
+            let output;
+            if (currentOperation === 'multiply') {
+                output = input * currentValue;
+            } else if (currentOperation === 'add') {
+                output = parseInt(input) + currentValue;
+            } else if (currentOperation === 'subtract') {
+                output = input - currentValue;
+            }
+            document.getElementById('outputResult').innerText = `خروجی: ${output}`;
+            document.getElementById('res').innerText = "ressss";
+            
+        }
+
+        function checkAnswer() {
+            const selectedOperation = document.querySelector('input[name="operation"]:checked').value;
+            if (selectedOperation === currentOperation) {
+                document.getElementById('feedback').innerText = 'آفرین! دانسمند کوچک ایرانی .';
+                document.getElementById('detailedQuestion').style.display = 'block';
+            } else {
+                document.getElementById('feedback').innerText = 'متاسفانه پاسخ شما اشتباه است.';
+            }
+        }
+
+        function checkDetailedAnswer() {
+            const detailedInput = document.getElementById('detailedInput').value;
+            if (parseInt(detailedInput) === currentValue) {
+                document.getElementById('detailedFeedback').innerText = 'عالی! پاسخ شما درست است.';
+                score += 10;
+                document.getElementById('scoreValue').innerText = score;
+            } else {
+                document.getElementById('detailedFeedback').innerText = 'متاسفانه پاسخ شما اشتباه است.';
+            }
+        }
+
+        // Initialize machine behavior on page load
+        changeMachineBehavior();
+    </script>
+
+</body>
+</html>

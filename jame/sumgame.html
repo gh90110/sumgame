@@ -137,9 +137,19 @@
   }
 
   function generateTargetNumber() {
-      targetNumber = Math.floor(Math.random() * 20) + 1;
+    //targetNumber = Math.floor(Math.random() * 20) + 1;// خط قبلی که حذف کردم 
+      targetNumber = getRandomEvenInRange(15, 40);// خط جدید که اضافه کردم 
       targetNumberDisplay.textContent = `عدد هدف: ${targetNumber}`;
-  }
+
+    }
+
+   function getRandomEvenInRange(min, max) {
+      let randomNum;
+      do {
+        randomNum = Math.floor(Math.random() * (max - min + 1)) + min;
+         } while (randomNum % 2 !== 0); // تا زمانی که عدد زوج نباشد ادامه بده
+               return randomNum;
+    }
 
   function selectCell(cell) {
       if (selectedCells.includes(cell)) {

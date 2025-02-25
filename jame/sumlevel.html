@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بازی ریاضی</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 320px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        .stars {
+            display: flex;
+            gap: 4px;
+        }
+        .star {
+            color: #ddd;
+            font-size: 1.5rem;
+        }
+        .star.filled {
+            color: gold;
+        }
+        .problem {
+            font-size: 2.5rem;
+            text-align: center;
+            margin: 1.5rem 0;
+            direction: ltr;
+        }
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+        }
+        button {
+            padding: 1rem;
+            font-size: 1.25rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+        }
+        .number {
+            background: #e6f0ff;
+        }
+        .number:hover {
+            background: #cce0ff;
+        }
+        .clear {
+            background: #f0f0f0;
+        }
+        .enter {
+            background: #4CAF50;
+            color: white;
+        }
+        .level {
+            background: #2196F3;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="stars" id="stars"></div>
+            <button class="level" onclick="changeLevel()">مرحله <span id="level">1</span></button>
+        </div>
+        <div class="problem">
+            <span id="num1">17</span> + <span id="num2">22</span> = <span id="answer">?</span>
+        </div>
+        <div class="keypad">
+            <button class="number" onclick="addNumber(1)">1</button>
+            <button class="number" onclick="addNumber(2)">2</button>
+            <button class="number" onclick="addNumber(3)">3</button>
+            <button class="number" onclick="addNumber(4)">4</button>
+            <button class="number" onclick="addNumber(5)">5</button>
+            <button class="number" onclick="addNumber(6)">6</button>
+            <button class="number" onclick="addNumber(7)">7</button>
+            <button class="number" onclick="addNumber(8)">8</button>
+            <button class="number" onclick="addNumber(9)">9</button>
+            <button class="clear" onclick="clearInput()">پاک</button>
+            <button class="number" onclick="addNumber(0)">0</button>
+            <button class="enter" onclick="checkAnswer()">ورود</button>
+        </div>
+    </div>
+
+    <script>
+        let currentLevel = 1;
+        let score = 0;
+        let input = '';
+        let currentProblem = { num1: 17, num2: 22, answer: 39 };
+
+        function generateStars() {
+            const starsDiv = document.getElementById('stars');
+            starsDiv.innerHTML = '★'.repeat(score) + '☆'.repeat(10 - score);
+        }
+
+        function generateProblem() {
+            let max;
+            switch(currentLevel) {
+                case 1: max = 20; break;
+                case 2: max = 50; break;
+                case 3: max = 100; break;
+                case 4: max = 1000; break;
+            }
+            const num1 = Math.floor(Math.random() * max) + 1;
+            const num2 = Math.floor(Math.random() * (max - num1)) + 1;
+            currentProblem = { num1, num2, answer: num1 + num2 };
+            document.getElementById('num1').textContent = num1;
+            document.getElementById('num2').textContent = num2;
+            document.getElementById('answer').textContent = '?';
+            input = '';
+        }
+
+        function addNumber(num) {
+            if (input.length < 3) {
+                input += num;
+                document.getElementById('answer').textContent = input;
+            }
+        }
+
+        function clearInput() {
+            input = '';
+            document.getElementById('answer').textContent = '?';
+        }
+
+        function checkAnswer() {
+            if (parseInt(input) === currentProblem.answer) {
+                score = Math.min(score + 1, 10);
+                generateStars();
+            }
+            generateProblem();
+        }
+
+        function changeLevel() {
+            currentLevel = currentLevel === 4 ? 1 : currentLevel + 1;
+            document.getElementById('level').textContent = currentLevel;
+            score = 0;
+            generateStars();
+            generateProblem();
+        }
+
+        generateStars();
+        generateProblem();
+    </script>
+</body>
+</html>
