@@ -153,6 +153,8 @@
         const feedbackElement = document.getElementById("feedback");
         const restartButton = document.getElementById("restart");
         const timerElement = document.getElementById("timer");
+        const true_sound = '../sounds/right.mp3';// صدای تشویق
+        const false_sound = '../sounds/wrong.mp3';// صدا هنگام پاسخ غلط
 
         // تابع برای نمایش کسر به صورت صحیح
         function formatFraction(numerator, denominator) {
@@ -247,11 +249,15 @@
                 feedbackElement.style.color = "green";
                 score += 10;
                 correctCount++;
+                const audio = new Audio(true_sound);
+                audio.play();
                 generateNewQuestion();
             } else {
                 feedbackElement.textContent = `❌ پاسخ اشتباه! ${correctAnswer.split("/")[0]} قسمت از ${correctAnswer.split("/")[1]} قسمت مساوی رنگ شده است. پس گزینه درست ${correctAnswer} است.`;
                 feedbackElement.style.color = "red";
                 wrongCount++;
+                const audio = new Audio(false_sound);
+                audio.play();
             }
             scoreElement.textContent = `امتیاز شما: ${score} | درست: ${correctCount} | غلط: ${wrongCount}`;
 

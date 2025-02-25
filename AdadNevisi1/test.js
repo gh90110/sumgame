@@ -1,3 +1,10 @@
+const true_sound = '../sounds/right.mp3';
+const false_sound = '../sounds/wrong.mp3';
+
+let correctAnswersCount = 0;
+let wrongAnswersCount = 0;
+let failedNumbers = [];
+
 function numberToWords(number) {
     if (number === 0) return "صفر";
     const ones = ["", "یک", "دو", "سه", "چهار", "پنج", "شش", "هفت", "هشت", "نه"];
@@ -32,18 +39,36 @@ function generateRandomNumber(max) {
     return Math.floor(Math.random() * (max + 1));
 }
 
-// تابع تصادفی‌سازی آرایه با الگوریتم Fisher-Yates
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1)); // انتخاب یک index تصادفی
-        [array[i], array[j]] = [array[j], array[i]]; // جابجایی عناصر
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
     }
     return array;
 }
-
+function generateRandomNumber1(){
+        // انتخاب تصادفی بین ۴، ۵ و ۶ رقمی
+        const digitChoice = Math.floor(Math.random() * 3); // 0, 1, یا 2
+        let min, max;
+    
+        if (digitChoice === 0) {
+            // اعداد ۴ رقمی (۱۰۰۰ تا ۹۹۹۹)
+            min = 1000;
+            max = 9999;
+        } else if (digitChoice === 1) {
+            // اعداد ۵ رقمی (۱۰۰۰۰ تا ۹۹۹۹۹)
+            min = 10000;
+            max = 99999;
+        } else {
+            // اعداد ۶ رقمی (۱۰۰۰۰۰ تا ۹۹۹۹۹۹)
+            min = 100000;
+            max = 999999;
+        }
+    
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 function generateQuestion() {
-    const randomNumber = generateRandomNumber(999999);
-    //const isNumberToWord = Math.random() > 0.5;
+    const randomNumber = generateRandomNumber1();
     const isNumberToWord = 1;
     const questionDiv = document.getElementById('question');
     const answerAreaDiv = document.getElementById('answer-area');
@@ -58,12 +83,11 @@ function generateQuestion() {
 
         const answers = [
             correctAnswer,
-            numberToWords(Math.floor(randomNumber / 100)),
-            numberToWords(Math.floor(randomNumber / 10)),
+            numberToWords(Math.floor(randomNumber / 100))+' هزار و ' + numberToWords(randomNumber % 100),
+            numberToWords(Math.floor(randomNumber / 10))+' و ' + numberToWords(randomNumber % 10),
             numberToWords(Math.floor(randomNumber * 10))
         ];
 
-        // تصادفی‌سازی آرایه answers با الگوریتم Fisher-Yates
         const shuffledAnswers = shuffleArray(answers);
 
         shuffledAnswers.forEach(option => {
@@ -71,7 +95,7 @@ function generateQuestion() {
             optionElement.classList.add('option');
             optionElement.textContent = option;
             optionElement.addEventListener('click', () => {
-                checkAnswer(option, correctAnswer);
+                checkAnswer(option, correctAnswer, randomNumber);
             });
             answerAreaDiv.appendChild(optionElement);
         });
@@ -88,11 +112,14 @@ function generateQuestion() {
     return;
 }
 
-function checkAnswer(userAnswer, correctAnswer) {
+function checkAnswer(userAnswer, correctAnswer, number) {
     const feedbackDiv = document.getElementById('feedback');
     const scoreDiv = document.getElementById('score');
-    let currentScore = parseInt(localStorage.getItem('score') || '0');
+    const correctCountDiv = document.getElementById('correct-count');
+    const wrongCountDiv = document.getElementById('wrong-count');
+    const failedNumbersDiv = document.getElementById('failed-numbers');
     let isCorrect = false;
+
     if (typeof correctAnswer === 'number') {
         isCorrect = parseInt(userAnswer) === correctAnswer;
     } else {
@@ -102,14 +129,22 @@ function checkAnswer(userAnswer, correctAnswer) {
     if (isCorrect) {
         feedbackDiv.textContent = "پاسخ صحیح است!";
         feedbackDiv.style.color = "green";
-        currentScore++;
+        correctAnswersCount++;
+        const audio = new Audio(true_sound);
+        audio.play();
     } else {
         feedbackDiv.textContent = "پاسخ اشتباه است.";
         feedbackDiv.style.color = "red";
+        wrongAnswersCount++;
+        failedNumbers.push(number);
+        const audio = new Audio(false_sound);
+        audio.play();
     }
 
-    localStorage.setItem('score', currentScore);
-    scoreDiv.textContent = "امتیاز: " + currentScore;
+    correctCountDiv.textContent = "تعداد پاسخ‌های صحیح: " + correctAnswersCount;
+    wrongCountDiv.textContent = "تعداد پاسخ‌های غلط: " + wrongAnswersCount;
+    failedNumbersDiv.textContent = "اعداد پاسخ داده نشده: " + failedNumbers.join(', ');
+
     setTimeout(() => {
         generateQuestion();
         feedbackDiv.textContent = '';
@@ -120,8 +155,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const submitButton = document.getElementById('submitButton');
     const feedbackDiv = document.getElementById('feedback');
     const scoreDiv = document.getElementById('score');
+    const correctCountDiv = document.getElementById('correct-count');
+    const wrongCountDiv = document.getElementById('wrong-count');
+    const failedNumbersDiv = document.getElementById('failed-numbers');
     const backButton = document.getElementById('backButton');
-    scoreDiv.textContent = "امتیاز: " + (localStorage.getItem('score') || '0');
 
     generateQuestion();
 
@@ -130,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const inputElement = answerArea.querySelector('input');
         const questionDiv = document.getElementById('question');
         if (inputElement) {
-            checkAnswer(inputElement.value, parseInt(questionDiv.textContent));
+            checkAnswer(inputElement.value, parseInt(questionDiv.textContent), parseInt(questionDiv.textContent));
         }
     });
 

@@ -1,0 +1,170 @@
+!DOCTYPE html
+html lang=fa dir=rtl
+head
+    meta charset=UTF-8
+    titleآموزش ضرب برای کودکانtitle
+    style
+        body {
+            font-family 'Segoe UI', Tahoma, sans-serif;
+            background-color #f0f9ff;
+            padding 20px;
+        }
+        
+        .container {
+            max-width 800px;
+            margin 0 auto;
+            text-align center;
+        }
+        
+        .question-box {
+            background-color #fff;
+            border-radius 15px;
+            padding 20px;
+            box-shadow 0 0 10px rgba(0,0,0,0.1);
+            margin 20px 0;
+        }
+        
+        .feedback {
+            display none;
+            padding 10px;
+            margin 10px;
+            border-radius 5px;
+        }
+        
+        .correct { background-color #dfffdf; color #2a802a; }
+        .incorrect { background-color #ffe5e5; color #cc0000; }
+        
+        input, button {
+            font-size 18px;
+            padding 10px;
+            margin 5px;
+            border-radius 5px;
+        }
+        
+        button {
+            background-color #4CAF50;
+            color white;
+            border none;
+            cursor pointer;
+        }
+        
+        .stats {
+            font-size 18px;
+            color #666;
+        }
+    style
+head
+body
+    div class=container
+        h1🎯 بازی آموزش ضرب 🎓h1
+        div class=stats
+            spanامتیاز span id=score0spanspan
+             
+            spanسطح span id=level1spanspan
+        div
+        
+        div class=question-box
+            h2 id=questionh2
+            input type=number id=answer placeholder=پاسخ خود را وارد کنید...
+            button onclick=checkAnswer()بررسی پاسخbutton
+            div id=feedback class=feedbackdiv
+        div
+    div
+
+    script
+        let currentScore = 0;
+        let currentLevel = 1;
+        let currentQuestion = null;
+
+         تنظیمات اولیه
+        async function initializeGame() {
+            currentQuestion = await fetchQuestion();
+            updateDisplay();
+        }
+
+         دریافت سوال جدید از API
+        async function fetchQuestion() {
+            try {
+                const response = await fetch('httpsapi.qroq.commathmultiplication', {
+                    method 'POST',
+                    headers {
+                        'Content-Type' 'applicationjson',
+                        'Authorization' 'Bearer YOUR_API_KEY'
+                    },
+                    body JSON.stringify({
+                        difficulty currentLevel,
+                        lang 'fa'
+                    })
+                });
+                
+                const data = await response.json();
+                return data.question;
+            } catch (error) {
+                console.error('خطا در دریافت سوال', error);
+                return {num1 2, num2 2};  حالت پیشفرض اگر API کار نکرد
+            }
+        }
+
+         بررسی پاسخ کاربر
+        async function checkAnswer() {
+            const userAnswer = parseInt(document.getElementById('answer').value);
+            const feedbackDiv = document.getElementById('feedback');
+            
+            try {
+                const response = await fetch('httpsapi.qroq.comanswercheck', {
+                    method 'POST',
+                    headers {
+                        'Content-Type' 'applicationjson',
+                        'Authorization' 'Bearer YOUR_API_KEY'
+                    },
+                    body JSON.stringify({
+                        questionId currentQuestion.id,
+                        answer userAnswer
+                    })
+                });
+                
+                const result = await response.json();
+
+                if (result.correct) {
+                    currentScore += 10  currentLevel;
+                    showFeedback('آفرین! پاسخ درست است 🎉', 'correct');
+                    currentLevel = Math.min(5, currentLevel + 1);
+                } else {
+                    showFeedback(`اشکالی نداره! دوباره تلاش کن 💪 پاسخ صحیح ${currentQuestion.num1  currentQuestion.num2}`, 'incorrect');
+                    currentLevel = Math.max(1, currentLevel - 1);
+                }
+                
+                updateDisplay();
+                currentQuestion = await fetchQuestion();
+                document.getElementById('answer').value = '';
+            } catch (error) {
+                console.error('خطا در بررسی پاسخ', error);
+            }
+        }
+
+         نمایش بازخورد
+        function showFeedback(message, type) {
+            const feedbackDiv = document.getElementById('feedback');
+            feedbackDiv.className = `feedback ${type}`;
+            feedbackDiv.textContent = message;
+            feedbackDiv.style.display = 'block';
+            
+            setTimeout(() = {
+                feedbackDiv.style.display = 'none';
+            }, 3000);
+        }
+
+         به روزرسانی نمایش
+        function updateDisplay() {
+            document.getElementById('question').textContent = 
+                `${currentQuestion.num1} × ${currentQuestion.num2} = ؟`;
+            
+            document.getElementById('score').textContent = currentScore;
+            document.getElementById('level').textContent = currentLevel;
+        }
+
+         شروع بازی
+        initializeGame();
+    script
+body
+html

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>آموزش ضرب به کودکان 🎓</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background-color: #f0f9ff;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .question-box {
+            font-size: 2.5em;
+            color: #2c3e50;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #e8f4f8;
+            border-radius: 10px;
+        }
+
+        input {
+            font-size: 1.5em;
+            width: 100px;
+            padding: 10px;
+            margin: 10px;
+            border: 3px solid #3498db;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        button {
+            font-size: 1.2em;
+            padding: 12px 25px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+            transform: scale(1.05);
+        }
+
+        .feedback {
+            min-height: 60px;
+            font-size: 1.3em;
+            margin: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .score {
+            font-size: 1.2em;
+            color: #27ae60;
+            margin: 15px 0;
+        }
+
+        .animation {
+            animation: bounce 0.5s ease;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>بازی آموزش ضرب 🔢</h1>
+        <div class="score">امتیاز: <span id="score">0</span></div>
+        <div class="question-box" id="question"></div>
+        <input type="number" id="answer" placeholder="پاسخ شما...">
+        <button onclick="checkAnswer()">بررسی پاسخ ✅</button>
+        <div class="feedback" id="feedback"></div>
+    </div>
+
+    <script>
+        // تنظیمات اولیه
+        let currentScore = 0;
+        let currentQuestion = generateQuestion();
+        const API_KEY = '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'; // جایگزین کنید با API Key خودتان
+        const API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+
+        // تولید سوال جدید
+        function generateQuestion() {
+            const num1 = Math.floor(Math.random() * 8) + 2; // اعداد بین 2 تا 9
+            const num2 = Math.floor(Math.random() * 8) + 2;
+            return { num1, num2, answer: num1 * num2 };
+        }
+
+        // نمایش سوال جدید
+        function displayNewQuestion() {
+            currentQuestion = generateQuestion();
+            document.getElementById('question').textContent = 
+                `${currentQuestion.num1} × ${currentQuestion.num2} = ?`;
+            document.getElementById('answer').value = '';
+        }
+
+        // دریافت پاسخ از Groq API
+        async function getAIResponse(isCorrect) {
+            const prompt = isCorrect ? 
+                "  برای تشویق کاربر یک بیت شعر از شاعران ایرانی بنویس" : 
+                "یک پیام انگیزشی برای پاسخ اشتباه در ریاضی به زبان فارسی بنویس";
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: "llama-3.3-70b-versatile",
+                        messages: [{
+                            role: "user",
+                            content: prompt
+                        }],
+                        temperature: 0.7
+                    })
+                });
+
+                const data = await response.json();
+                return data.choices[0].message.content;
+            } catch (error) {
+                console.error('خطا در ارتباط با API:', error);
+                return isCorrect ? "آفرین! درست جواب دادی 🎉" : "دوباره تلاش کن، حتما موفق میشی 💪";
+            }
+        }
+
+        // بررسی پاسخ کاربر
+        async function checkAnswer() {
+            const userAnswer = parseInt(document.getElementById('answer').value);
+            const feedbackElement = document.getElementById('feedback');
+            
+            if (userAnswer === currentQuestion.answer) {
+                currentScore += 5;
+                feedbackElement.style.backgroundColor = '#dff0d8';
+                const aiResponse = await getAIResponse(true);
+                feedbackElement.innerHTML = `✅ ${aiResponse}`;
+            } else {
+                feedbackElement.style.backgroundColor = '#f8d7da';
+                const aiResponse = await getAIResponse(false);
+                feedbackElement.innerHTML = `❌ ${aiResponse}<br>پاسخ صحیح: ${currentQuestion.answer}`;
+            }
+
+            document.getElementById('score').textContent = currentScore;
+            feedbackElement.classList.add('animation');
+            setTimeout(() => feedbackElement.classList.remove('animation'), 500);
+            
+            displayNewQuestion();
+        }
+
+        // شروع بازی
+        displayNewQuestion();
+    </script>
+</body>
+</html>

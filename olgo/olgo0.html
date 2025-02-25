@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <title>آموزش الگوها برای کودکان</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', cursive;
+            background-color: #f0f9ff;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        h1 {
+            color: #ff6b6b;
+            font-size: 40px;
+            margin-bottom: 30px;
+        }
+
+        .pattern-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .pattern {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .element {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid #ddd;
+        }
+
+        .color { border-radius: 50%; }
+        .number { background-color: #fff; }
+
+        .red { background-color: #ff6b6b; color: white; }
+        .blue { background-color: #4ecdc4; color: white; }
+        .yellow { background-color: #ffe66d; color: black; }
+
+        button {
+            background-color: #4ecdc4;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 18px;
+            cursor: pointer;
+            margin: 10px;
+        }
+
+        @keyframes jump {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .jump { animation: jump 0.5s ease-in-out; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>بازی الگوهای هوشمند</h1>
+        <div class="progress">
+            <h3>مرحله: <span id="level">1</span></h3>
+            <h3>امتیاز: <span id="score">0</span></h3>
+        </div>
+
+        <div class="pattern-container">
+            <h2 id="instruction">الگوی مرحله را تکرار کنید</h2>
+            <div class="pattern" id="pattern"></div>
+            <div class="pattern" id="user-pattern"></div>
+            <div class="pattern" id="palette">
+                <div class="element red color" onclick="addElement('red')">●</div>
+                <div class="element blue color" onclick="addElement('blue')">●</div>
+                <div class="element yellow color" onclick="addElement('yellow')">●</div>
+                <div class="element number" onclick="addElement('1')">1</div>
+                <div class="element number" onclick="addElement('2')">2</div>
+                <div class="element number" onclick="addElement('3')">3</div>
+            </div>
+            <button onclick="checkAnswer()">بررسی پاسخ</button>
+        </div>
+    </div>
+
+    <script>
+        let currentLevel = 1;
+        let score = 0;
+        let currentPattern = [];
+        let userPattern = [];
+        
+        // تعریف سطوح مختلف
+        const levels = {
+            1: { type: 'color', length: 3 },
+            2: { type: 'number', length: 4 },
+            3: { type: 'mixed', length: 5 }
+        };
+
+        // تولید الگوی تصادفی بدون تکرار
+        function generatePattern() {
+            const {type, length} = levels[currentLevel];
+            let elements = [];
+            
+            if(type === 'color') elements = ['red', 'blue', 'yellow'];
+            if(type === 'number') elements = ['1', '2', '3'];
+            if(type === 'mixed') elements = ['red', 'blue', 'yellow', '1', '2', '3'];
+
+            const pattern = [];
+            while(pattern.length < length) {
+                const random = elements[Math.floor(Math.random() * elements.length)];
+                if(pattern[pattern.length-1] !== random) {
+                    pattern.push(random);
+                }
+            }
+            return pattern;
+        }
+
+        // نمایش الگو
+        function showPattern() {
+            const patternDiv = document.getElementById('pattern');
+            patternDiv.innerHTML = '';
+            
+            currentPattern.forEach(item => {
+                const el = document.createElement('div');
+                el.className = `element ${item} ${isNaN(item) ? 'color' : 'number'}`;
+                el.textContent = isNaN(item) ? '●' : item;
+                patternDiv.appendChild(el);
+            });
+        }
+
+        // اضافه کردن عنصر توسط کاربر
+        function addElement(value) {
+            const userDiv = document.getElementById('user-pattern');
+            const el = document.createElement('div');
+            el.className = `element ${value} ${isNaN(value) ? 'color' : 'number'} jump`;
+            el.textContent = isNaN(value) ? '●' : value;
+            userDiv.appendChild(el);
+            userPattern.push(value);
+        }
+
+        // پخش صدا
+        function playSound(filename) {
+            const audio = new Audio(filename);
+            audio.play();
+        }
+
+        // بررسی پاسخ
+        function checkAnswer() {
+            const isCorrect = currentPattern.length === userPattern.length &&
+                             currentPattern.every((val, i) => val === userPattern[i]);
+
+            if(isCorrect) {
+                score += 10;
+                playSound('right.mp3');
+                //alert('آفرین! درست حدس زدی! 😊');
+                currentLevel = Math.min(currentLevel + 1, 3);
+                startLevel();
+            } else {
+                score = Math.max(0, score - 5);
+                playSound('wrong.mp3');
+                //alert('اشتباه بود! دوباره امتحان کن! 😟');
+                resetGame();
+            }
+            
+            document.getElementById('score').textContent = score;
+            document.getElementById('level').textContent = currentLevel;
+        }
+
+        // شروع سطح جدید
+        function startLevel() {
+            currentPattern = generatePattern();
+            userPattern = [];
+            document.getElementById('user-pattern').innerHTML = '';
+            showPattern();
+        }
+
+        // ریست بازی
+        function resetGame() {
+            userPattern = [];
+            document.getElementById('user-pattern').innerHTML = '';
+        }
+
+        // شروع بازی
+        startLevel();
+    </script>
+</body>
+</html>
