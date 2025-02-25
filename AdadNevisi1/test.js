@@ -27,64 +27,82 @@ function numberToWords(number) {
 
     return result.join(" و ").trim();
 }
+
 function generateRandomNumber(max) {
     return Math.floor(Math.random() * (max + 1));
 }
-function generateQuestion(){
-     const randomNumber = generateRandomNumber(999999);
-     //const isNumberToWord = Math.random() > 0.5;
-     const isNumberToWord = 1;
-     const questionDiv = document.getElementById('question');
-     const answerAreaDiv = document.getElementById('answer-area');
-     answerAreaDiv.innerHTML = '';
-     let correctAnswer ;
-     let questionString;
 
-    if(isNumberToWord){
+// تابع تصادفی‌سازی آرایه با الگوریتم Fisher-Yates
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1)); // انتخاب یک index تصادفی
+        [array[i], array[j]] = [array[j], array[i]]; // جابجایی عناصر
+    }
+    return array;
+}
+
+function generateQuestion() {
+    const randomNumber = generateRandomNumber(999999);
+    //const isNumberToWord = Math.random() > 0.5;
+    const isNumberToWord = 1;
+    const questionDiv = document.getElementById('question');
+    const answerAreaDiv = document.getElementById('answer-area');
+    answerAreaDiv.innerHTML = '';
+    let correctAnswer;
+    let questionString;
+
+    if (isNumberToWord) {
         questionString = randomNumber;
         correctAnswer = numberToWords(randomNumber);
         questionDiv.textContent = questionString;
 
-        const answers = [correctAnswer,numberToWords(Math.floor(randomNumber / 100)),numberToWords(Math.floor(randomNumber / 10)),numberToWords(Math.floor(randomNumber * 10))];
-        //shuffle the array of answers randomly
-        answers.sort(() => Math.random() - 0.5);
-         answers.forEach(option => {
-             const optionElement = document.createElement('div');
-             optionElement.classList.add('option');
-             optionElement.textContent = option;
+        const answers = [
+            correctAnswer,
+            numberToWords(Math.floor(randomNumber / 100)),
+            numberToWords(Math.floor(randomNumber / 10)),
+            numberToWords(Math.floor(randomNumber * 10))
+        ];
+
+        // تصادفی‌سازی آرایه answers با الگوریتم Fisher-Yates
+        const shuffledAnswers = shuffleArray(answers);
+
+        shuffledAnswers.forEach(option => {
+            const optionElement = document.createElement('div');
+            optionElement.classList.add('option');
+            optionElement.textContent = option;
             optionElement.addEventListener('click', () => {
-              checkAnswer(option, correctAnswer);
-         });
-             answerAreaDiv.appendChild(optionElement);
-         });
-         return;
+                checkAnswer(option, correctAnswer);
+            });
+            answerAreaDiv.appendChild(optionElement);
+        });
+        return;
     }
 
-     questionString = numberToWords(randomNumber);
-     correctAnswer = randomNumber;
-     questionDiv.textContent = questionString;
-     const inputElement = document.createElement('input');
-     inputElement.type = "number";
+    questionString = numberToWords(randomNumber);
+    correctAnswer = randomNumber;
+    questionDiv.textContent = questionString;
+    const inputElement = document.createElement('input');
+    inputElement.type = "number";
     inputElement.placeholder = "عدد را وارد کنید";
-     answerAreaDiv.appendChild(inputElement);
-     return;
+    answerAreaDiv.appendChild(inputElement);
+    return;
 }
-function checkAnswer(userAnswer, correctAnswer){
+
+function checkAnswer(userAnswer, correctAnswer) {
     const feedbackDiv = document.getElementById('feedback');
     const scoreDiv = document.getElementById('score');
     let currentScore = parseInt(localStorage.getItem('score') || '0');
     let isCorrect = false;
-    if(typeof correctAnswer === 'number'){
-        isCorrect = parseInt(userAnswer) === correctAnswer
-    } else{
+    if (typeof correctAnswer === 'number') {
+        isCorrect = parseInt(userAnswer) === correctAnswer;
+    } else {
         isCorrect = userAnswer === correctAnswer;
     }
-
 
     if (isCorrect) {
         feedbackDiv.textContent = "پاسخ صحیح است!";
         feedbackDiv.style.color = "green";
-        currentScore++
+        currentScore++;
     } else {
         feedbackDiv.textContent = "پاسخ اشتباه است.";
         feedbackDiv.style.color = "red";
@@ -92,32 +110,31 @@ function checkAnswer(userAnswer, correctAnswer){
 
     localStorage.setItem('score', currentScore);
     scoreDiv.textContent = "امتیاز: " + currentScore;
-    setTimeout(()=>{
+    setTimeout(() => {
         generateQuestion();
         feedbackDiv.textContent = '';
-    },1500)
+    }, 1500);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     const submitButton = document.getElementById('submitButton');
     const feedbackDiv = document.getElementById('feedback');
-     const scoreDiv = document.getElementById('score');
+    const scoreDiv = document.getElementById('score');
     const backButton = document.getElementById('backButton');
-     scoreDiv.textContent = "امتیاز: " + (localStorage.getItem('score') || '0');
+    scoreDiv.textContent = "امتیاز: " + (localStorage.getItem('score') || '0');
 
     generateQuestion();
 
-     submitButton.addEventListener('click', () => {
+    submitButton.addEventListener('click', () => {
         const answerArea = document.getElementById('answer-area');
-        const inputElement = answerArea.querySelector('input')
-         const questionDiv = document.getElementById('question');
-        if(inputElement) {
-           checkAnswer(inputElement.value, parseInt(questionDiv.textContent) )
+        const inputElement = answerArea.querySelector('input');
+        const questionDiv = document.getElementById('question');
+        if (inputElement) {
+            checkAnswer(inputElement.value, parseInt(questionDiv.textContent));
         }
-
     });
-     backButton.addEventListener('click', () => {
+
+    backButton.addEventListener('click', () => {
         window.location.href = 'index.html';
     });
-
 });
